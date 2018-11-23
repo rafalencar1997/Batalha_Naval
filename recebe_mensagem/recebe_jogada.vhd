@@ -9,7 +9,7 @@ entity recebe_jogada is
 		enable:         in STD_LOGIC;
 		jog_Nmsg:       in STD_LOGIC;
 		erro:           out STD_LOGIC;
-		pronto: 			 out STD_LOGIC;
+		recebe_pronto:  out STD_LOGIC;
 		reg_jogada_L:	 out STD_LOGIC_VECTOR(6 downto 0);
 		reg_jogada_C:	 out STD_LOGIC_VECTOR(6 downto 0);
 		reg_mensagem:	 out STD_LOGIC_VECTOR(6 downto 0)
@@ -51,7 +51,7 @@ architecture recebe_jogada_arch of recebe_jogada is
 			pronto:        out STD_LOGIC
 		);
 	end component;
-	
+	--dvdvdv
 	-- Registrador
 	component registrador_n
 		generic (
@@ -137,7 +137,7 @@ begin
 		enable_regC  => s_enable_C,
 		enable_regM  => s_enable_M, 
 		recebe_dado  => s_recebe_dado,
-		pronto       => pronto
+		pronto       => recebe_pronto
     );
 	
 	erro <= s_erro;

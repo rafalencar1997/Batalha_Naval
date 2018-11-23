@@ -62,7 +62,7 @@ architecture batalha_naval_fd_arc of batalha_naval_fd is
 			enable:         in STD_LOGIC;
 			jog_Nmsg:       in STD_LOGIC;
 			erro:           out STD_LOGIC;
-			pronto: 			 out STD_LOGIC;
+			recebe_pronto:  out STD_LOGIC;
 			reg_jogada_L:	 out STD_LOGIC_VECTOR(6 downto 0);
 			reg_jogada_C:	 out STD_LOGIC_VECTOR(6 downto 0);
 			reg_mensagem:	 out STD_LOGIC_VECTOR(6 downto 0)
@@ -127,7 +127,7 @@ begin
 		enable			=> recebe_enable, 
 		jog_Nmsg			=> jog_Nmsg, 
 		erro				=> recebe_erro, 
-		pronto			=> recebe_pronto, 
+		recebe_pronto	=> recebe_pronto, 
 		reg_jogada_L	=> s_jogada_L, 
 		reg_jogada_C	=> s_jogada_C, 
 		reg_mensagem	=> s_mensagem 
