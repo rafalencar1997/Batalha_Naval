@@ -132,7 +132,7 @@ begin
 		reg_jogada_C	=> s_jogada_C, 
 		reg_mensagem	=> s_mensagem 
 	);
-	
+	--dfdcsdddf
 	-- Envia Mensagem
 	EM: envia_mensagem
 	port map(

@@ -51,6 +51,7 @@ architecture recebe_jogada_arch of recebe_jogada is
 			pronto:        out STD_LOGIC
 		);
 	end component;
+	--dvdvdv
 	-- Registrador
 	component registrador_n
 		generic (
