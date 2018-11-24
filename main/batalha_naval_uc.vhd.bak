@@ -4,22 +4,20 @@ use IEEE.std_logic_1164.all;
 entity batalha_naval_uc is 
 	port(	
 		clock, reset: 			in STD_LOGIC;
-		vez: 						in STD_LOGIC;	
+		vez: 						in STD_LOGIC;
+		erro:                in STD_LOGIC;
+		recebe_pronto: 		in STD_LOGIC; 
+		opera_pronto: 			in STD_LOGIC; 
+		envia_pronto:   		in STD_LOGIC;
 		resposta_jogada:     in STD_LOGIC_VECTOR(1 downto 0);
-		estado: 					out STD_LOGIC_VECTOR(3 downto 0);
-		-- Controle Recebe
-		recebe_erro:         in STD_LOGIC;
-		recebe_pronto: 		in STD_LOGIC;
-		recebe_enable:       out STD_LOGIC;
+		
 		jog_Nmsg:            out STD_LOGIC;
 		term_Nadv:           out STD_LOGIC;
-		-- Controle Envia
-		envia_pronto:   		in STD_LOGIC;
+		recebe_enable:       out STD_LOGIC;
+		opera_enable:        out STD_LOGIC;
 		enviar_enable:       out STD_LOGIC;
 		mensagem:            out STD_LOGIC_VECTOR(2 downto 0);
-		-- Controle Operações 
-		opera_pronto: 			in STD_LOGIC; 
-		opera_enable:        out STD_LOGIC;
+		estado: 					out STD_LOGIC_VECTOR(3 downto 0);
 		operacao:            out STD_LOGIC_VECTOR(1 downto 0)		
 	);
 end;

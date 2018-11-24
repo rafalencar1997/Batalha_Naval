@@ -55,18 +55,14 @@ architecture batalha_naval_fd_arc of batalha_naval_fd is
 	end component;
 
 	-- Recebe Jogada
-	component recebe_mensagem 
+	component recebe_jogada 
 		port ( 
-			-- Entradas Controle
-			clock, reset:   in STD_LOGIC; 
-			recebe_enable:  in STD_LOGIC;
-			jog_Nmsg:       in STD_LOGIC;
-			--Entrada Dados     
+			clock, reset:   in STD_LOGIC;       
 			entrada_serial: in STD_LOGIC; 
-			--Saídas Controle
-			recebe_erro:    out STD_LOGIC;
+			enable:         in STD_LOGIC;
+			jog_Nmsg:       in STD_LOGIC;
+			erro:           out STD_LOGIC;
 			recebe_pronto:  out STD_LOGIC;
-			--Saídas Dados
 			reg_jogada_L:	 out STD_LOGIC_VECTOR(6 downto 0);
 			reg_jogada_C:	 out STD_LOGIC_VECTOR(6 downto 0);
 			reg_mensagem:	 out STD_LOGIC_VECTOR(6 downto 0)
@@ -123,20 +119,20 @@ begin
 	
 	
 	-- Recebe Jogada
-	RJ: recebe_mensagem
+	RJ: recebe_jogada
 	port map(
 		clock          => clock, 
 		reset  			=> reset,      
 		entrada_serial => s_entrada_serial,  
-		recebe_enable	=> recebe_enable, 
+		enable			=> recebe_enable, 
 		jog_Nmsg			=> jog_Nmsg, 
-		recebe_erro		=> recebe_erro, 
+		erro				=> recebe_erro, 
 		recebe_pronto	=> recebe_pronto, 
 		reg_jogada_L	=> s_jogada_L, 
 		reg_jogada_C	=> s_jogada_C, 
 		reg_mensagem	=> s_mensagem 
 	);
-	--dfdcsdddfsds
+	--dfdcsdddf
 	-- Envia Mensagem
 	EM: envia_mensagem
 	port map(

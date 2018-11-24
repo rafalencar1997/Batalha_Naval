@@ -26,24 +26,21 @@ architecture batalha_naval_arc of batalha_naval is
 	component batalha_naval_uc  
 		port(	
 			clock, reset: 			in STD_LOGIC;
-			vez: 						in STD_LOGIC;	
-			resposta_jogada:     in STD_LOGIC_VECTOR(1 downto 0);
-			estado: 					out STD_LOGIC_VECTOR(3 downto 0);
-			-- Controle Recebe
-			recebe_erro:         in STD_LOGIC;
-			recebe_pronto: 		in STD_LOGIC;
-			recebe_enable:       out STD_LOGIC;
+			vez: 						in STD_LOGIC;
+			erro:                in STD_LOGIC;
+			recebe_pronto: 		in STD_LOGIC; 
+			opera_pronto: 			in STD_LOGIC; 
+			envia_pronto:   		in STD_LOGIC;
+			
 			jog_Nmsg:            out STD_LOGIC;
 			term_Nadv:           out STD_LOGIC;
-			-- Controle Envia
-			envia_pronto:   		in STD_LOGIC;
+			recebe_enable:       out STD_LOGIC;
+			opera_enable:        out STD_LOGIC;
 			enviar_enable:       out STD_LOGIC;
 			mensagem:            out STD_LOGIC_VECTOR(2 downto 0);
-			-- Controle Operações 
-			opera_pronto: 			in STD_LOGIC; 
-			opera_enable:        out STD_LOGIC;
-			operacao:            out STD_LOGIC_VECTOR(1 downto 0)		
-	);
+			estado: 					out STD_LOGIC_VECTOR(3 downto 0);
+			operacao:            out STD_LOGIC_VECTOR(1 downto 0)
+		);
 	end component;
 
 	-- Fluxo de Dados
@@ -116,26 +113,23 @@ begin
 	
 	-- Unidade de Controle
 	UC: batalha_naval_uc
-	port map(	
-		clock           => clock, 
-		reset				 => not reset,
-		vez				 => vez,
-		resposta_jogada => "11", 
-		estado  			 => s_estado,
-		-- Controle Recebe
-		recebe_erro		 => s_recebe_erro,
-		recebe_pronto	 => s_recebe_pronto, 
-		recebe_enable	 => s_recebe_enable,
-		jog_Nmsg			 => s_jog_Nmsg,
-		term_Nadv		 => s_term_Nadv,
-		-- Controle Envia
-		envia_pronto	 => s_envia_pronto,
-		enviar_enable	 => s_envia_enable,
-		mensagem        => s_mensagem,
-		-- Controle Operações
-		opera_pronto	 => s_operacao_pronto, 
-		opera_enable    => s_operacao_enable,
-		operacao        => s_operacao
+	port map(
+		clock          => clock, 
+		reset				=>  not reset,
+		vez				=> vez,
+		erro				=> s_recebe_erro,
+		recebe_pronto	=> s_recebe_pronto, 
+		opera_pronto	=> s_operacao_pronto, 
+		envia_pronto	=> s_envia_pronto,
+		
+		jog_Nmsg			=> s_jog_Nmsg,
+		term_Nadv		=> s_term_Nadv,
+		recebe_enable	=> s_recebe_enable,
+		opera_enable   => s_operacao_enable,
+		enviar_enable	=> s_envia_enable,
+		mensagem       => s_mensagem,
+		estado  			=> s_estado,
+		operacao       => s_operacao
 	);
 
 	-- Fluxo de Dados
@@ -143,31 +137,41 @@ begin
 	port map(
 		clock								=> clock,  
 		reset								=> not reset , 
-		vez								=> vez, 		 
+		vez								=> vez, 
+			 
 		-- Controle Recebe
 		term_Nadv  						=> s_term_Nadv,                 
 		jog_Nmsg							=> s_jog_Nmsg, 
 		recebe_enable					=> s_recebe_enable, 
 		recebe_erro						=> s_recebe_erro, 
 		recebe_pronto					=> s_recebe_pronto, 
+			 
 		-- Dados Recebe
 		entrada_serial_terminal		=> entrada_serial_terminal, 
 		entrada_serial_adversario	=> entrada_serial_adversario, 
 		jogada_L							=> jogada_L, 
 		jogada_C							=> jogada_C, 
 		resultado_jogada				=> resultado_jogada, 
+			 
 		-- Controle Enviar
 		enviar_enable				=> s_envia_enable, 
 		mensagem						=> s_mensagem, 
 		enviar_pronto				=> s_envia_pronto, 
+			 
 		-- Dados Enviar
 		saida_serial_adversario	=> saida_serial_adversario, 
+		 
 		-- Controle Operações
 		opera_enable				=> s_operacao_enable, 
 		operacao						=> s_operacao, 
 		opera_pronto				=> s_operacao_pronto, 
+		
 		-- Dados Operações
-		saida_serial_terminal	=> saida_serial_terminal   
+		saida_serial_terminal	=> saida_serial_terminal 
+			 
+		--jogador_da_vez: 		out STD_LOGIC_VECTOR(6 downto 0);
+		--placar_jogador: 		out STD_LOGIC_VECTOR(6 downto 0);
+		--placar_adversario: 	out STD_LOGIC_VECTOR(6 downto 0)    
 	); 
 
 	HEX: hex7seg

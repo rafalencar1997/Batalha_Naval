@@ -71,7 +71,7 @@ architecture recebe_jogada_arch of recebe_jogada is
 	signal s_erro: 									 STD_LOGIC;
 	
 begin
-	
+	--dfsd
 	-- UART
 	UART_C: uart
 	port map(
