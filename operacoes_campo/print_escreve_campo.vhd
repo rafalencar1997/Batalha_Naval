@@ -13,9 +13,8 @@ use IEEE.std_logic_arith.all;
 
 entity print_escreve_campo is
     port (
-        clock, reset, iniciar: in std_logic;
-        operacao: in std_logic_vector(1 downto 0);
-		  dado: in std_logic_vector(6 downto 0);
+        clock, reset, iniciar, vez: in std_logic;
+        operacao, dado: in std_logic_vector(1 downto 0);
         endereco: in std_logic_vector(13 downto 0);
         saida_serial, pronto : out std_logic;
 		  resultado_jogada : out std_logic_vector(1 downto 0);
@@ -47,22 +46,22 @@ architecture print_escreve_campo of print_escreve_campo is
 
     component print_escreve_campo_fd port (
         clock, reset: in std_logic;
-        partida : in std_logic;                    -- tx_serial
-        we: in std_logic;                          -- memoria_jogo_64x7
-        conta, zera, carrega: in std_logic;        -- contador_m_load
-        endereco: in std_logic_vector(13 downto 0); -- contador_m_load
-        dado: in std_logic_vector(6 downto 0);
-		  sel: in std_logic_vector(1 downto 0);      -- mux3x1_n
 		  enable_led: in std_logic;
-        fim, fim_linha: out std_logic;             -- contador_m_load
-        saida_serial, pronto : out std_logic;      -- tx_serial
+        partida : in std_logic;
+		  vez :in std_logic;
+        we: in std_logic;
+        conta, zera, carrega: in std_logic;
+        endereco: in std_logic_vector(13 downto 0);
+        dado, sel: in std_logic_vector(1 downto 0);
+        fim, fim_linha: out std_logic;
+        saida_serial, pronto : out std_logic;
 		  resultado_jogada: out std_logic_vector(1 downto 0);
         db_q: out std_logic_vector(5 downto 0);
         db_dados: out std_logic_vector(6 downto 0)
-    );
+     );
     end component;
     
-    component edge_detector_2 is port (
+    component edge_detector is port (
   i_clk                       : in  std_logic;
   i_rstb                      : in  std_logic;
   i_input                     : in  std_logic;
@@ -72,15 +71,15 @@ architecture print_escreve_campo of print_escreve_campo is
 begin
 
     -- sinais reset e partida mapeados em botoes ativos em alto
-    U1: print_escreve_campo_uc port map (clock=>clock, reset=> reset, iniciar=>s_iniciar, operacao=>operacao, pronto=>s_pronto, 
+    U1: print_escreve_campo_uc port map (clock=>clock, reset=> not reset, iniciar=>s_iniciar, operacao=>operacao, pronto=>s_pronto, 
                                  fim=>s_fim, fim_linha=>s_fim_linha, zera=>s_zera, reseta=>s_reseta, conta=>s_conta,
                                  carrega=>s_carrega, we=>s_we, partida=>s_partida, pronto_out=>pronto, sel=>s_sel, enable_led=>s_enable_led);
-    U2: print_escreve_campo_fd port map (clock=>clock, reset=>s_reseta, partida=>s_partida , we=>s_we, enable_led=>s_enable_led,
+    U2: print_escreve_campo_fd port map (clock=>clock, reset=>s_reseta, partida=>s_partida ,vez => vez, we=>s_we, enable_led=>s_enable_led,
                                  conta=>s_conta, zera=>s_zera, carrega=>s_carrega, endereco=>endereco, dado=>dado, sel=>s_sel, 
                                  fim=>s_fim, fim_linha=>s_fim_linha, 
                                  saida_serial=>saida_serial, pronto=>s_pronto, resultado_jogada=>resultado_jogada,
                                  db_q=>s_q, db_dados=>db_dados);
-    U3: edge_detector_2 port map (clock, '1', not iniciar, s_iniciar);
+    U3: edge_detector port map (clock, '1', not iniciar, s_iniciar);
 
 
 -- depuracao
@@ -96,3 +95,4 @@ db_q<=s_q;
 db_sel <= s_sel;
 
 end print_escreve_campo;
+

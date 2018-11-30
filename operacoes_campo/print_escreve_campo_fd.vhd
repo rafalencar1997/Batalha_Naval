@@ -9,11 +9,10 @@ entity print_escreve_campo_fd is
     port (
         clock, reset: in std_logic;
         partida : in std_logic;                    -- tx_serial
-        we: in std_logic;                          -- memoria_jogo_64x7
+        we, vez: in std_logic;                          -- memoria_jogo_64x7
         conta, zera, carrega: in std_logic;        -- contador_m_load
         endereco: in std_logic_vector(13 downto 0); -- contador_m_load
-        dado: in std_logic_vector(6 downto 0);
-		  sel: in std_logic_vector(1 downto 0);      -- mux3x1_n
+        dado, sel: in std_logic_vector(1 downto 0);      -- mux3x1_n
 		  enable_led: in std_logic;
         fim, fim_linha: out std_logic;             -- contador_m_load
         saida_serial, pronto : out std_logic;      -- tx_serial
@@ -25,7 +24,7 @@ end print_escreve_campo_fd;
 
 architecture print_escreve_campo_fd of print_escreve_campo_fd is
     signal s_contagem, s_endereco: std_logic_vector(5 downto 0);
-    signal s_dados, s_mux, s_entrada: std_logic_vector (6 downto 0);
+    signal s_dados, s_mux, s_entrada, s_dados_adv,s_imprime_memoria, s_dados_resultado: std_logic_vector (6 downto 0);
 	 signal s_resultado_jogada, s_resultado_jogada_verificado: std_logic_vector (1 downto 0);
 	 signal s_linha, s_coluna: std_logic_vector(3 downto 0);
 	 signal s_endereco_invalido: std_logic;
@@ -35,6 +34,13 @@ architecture print_escreve_campo_fd of print_escreve_campo_fd is
         dados_ascii: in std_logic_vector (6 downto 0);
         saida_serial, pronto : out std_logic
     );
+    end component;
+	 
+	 component memoria_jogo_64x7_adv port (
+        linha, coluna : in  std_logic_vector(2 downto 0);
+        we            : in  std_logic;
+        dado_entrada  : in  std_logic_vector(6 downto 0);
+        dado_saida    : out std_logic_vector(6 downto 0));
     end component;
     
     component memoria_jogo_64x7 port (
@@ -81,21 +87,35 @@ begin
     U1: tx_serial port map (clock=>clock, reset=>reset, partida=>partida, paridade=>'0',
                             dados_ascii=>s_mux, saida_serial=>saida_serial, pronto=>pronto);
     U2: memoria_jogo_64x7 port map (linha=>s_contagem(5 downto 3), coluna=>s_contagem(2 downto 0), 
-                            we=>we, dado_entrada=>dado, dado_saida=>s_dados);
+                            we=>we and (not vez), dado_entrada=>s_entrada, dado_saida=>s_dados);
+	 
+	 U2_Adv: memoria_jogo_64x7_adv port map (linha=>s_contagem(5 downto 3), coluna=>s_contagem(2 downto 0), 
+                            we=>we and vez, dado_entrada=>s_entrada, dado_saida=>s_dados_adv);
+			
     U3: contador_m_load generic map (M => 64, N => 6) port map (CLK=>clock, zera=>zera, conta=>conta, carrega=>carrega,
-                                                           D=>s_endereco, q=>s_contagem, fim=>fim);
-    -- mux da saida memoria
-    U4: mux3x1_n generic map (BITS => 7) port map (D2 => "0001101", D1=> "0001010", D0=>s_dados, 
+                                                           D=>s_endereco, q=>s_contagem, fim=>fim); 
+	 -- mux da saida memoria
+    U4: mux3x1_n generic map (BITS => 7) port map (D2 => "0001101", D1=> "0001010", D0=>s_imprime_memoria, 
                                                    SEL=>sel, MX_OUT=>s_mux);
 
-  
+    -- mux da entrada da memoria
+    U5: mux3x1_n generic map (BITS => 7) port map (D2 => "1011000", D1=> "1000001", D0=>"1011111", 
+                                                   SEL=>dado, MX_OUT=>s_entrada);
 	 
-	 U6: decodificador_resultado_jogada port map (memoria => s_dados, jogada_cod => s_resultado_jogada);
+	 U6: decodificador_resultado_jogada port map (memoria => s_dados_resultado, jogada_cod => s_resultado_jogada);
 	 
 	 U7: decodificador_jogada port map(jogada_linha => endereco(13 downto 7), jogada_coluna => endereco(6 downto 0),
 													linha=> s_linha, coluna=>s_coluna);
 													
 	 s_endereco <= s_linha(2 downto 0) & s_coluna( 2 downto 0);
+	 
+	  with vez select
+			s_dados_resultado <= s_dados_adv when '1',
+										s_dados when others;
+	  
+	  with vez select
+			s_imprime_memoria <= s_dados when '0',
+										s_dados_adv when others;
 	 
 	 with s_contagem(2 downto 0) select
         fim_linha <= '1' when "111", '0' when others;
@@ -115,3 +135,4 @@ db_q <= s_contagem;
 db_dados <= s_mux;
     
 end print_escreve_campo_fd;
+
