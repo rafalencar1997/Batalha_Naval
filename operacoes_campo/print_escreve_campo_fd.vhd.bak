@@ -82,7 +82,6 @@ begin
                             dados_ascii=>s_mux, saida_serial=>saida_serial, pronto=>pronto);
     U2: memoria_jogo_64x7 port map (linha=>s_contagem(5 downto 3), coluna=>s_contagem(2 downto 0), 
                             we=>we, dado_entrada=>dado, dado_saida=>s_dados);
-									 
     U3: contador_m_load generic map (M => 64, N => 6) port map (CLK=>clock, zera=>zera, conta=>conta, carrega=>carrega,
                                                            D=>s_endereco, q=>s_contagem, fim=>fim);
     -- mux da saida memoria

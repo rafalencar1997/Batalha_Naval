@@ -23,7 +23,7 @@ entity rx_serial_uc is
 end rx_serial_uc;
 
 architecture arch of rx_serial_uc is
-    type tipo_Estado is (ESPERA_RECEBE, LEITURA_START, ESPERA_TICK_1, LEITURA_DADO_1, ESPERA_TICK_2, LEITURA_DADO_2, RECEBE_PRONTO);
+    type tipo_Estado is (ESPERA_RECEBE, LEITURA_START, ESPERA_TICK_1, LEITURA_DADO_1, ESPERA_TICK_2, LEITURA_DADO_2, ESPERA_TIMER );
     signal Eatual, Eprox: tipo_Estado;
 begin
 
@@ -58,11 +58,13 @@ begin
                                    end if;
 												
             when LEITURA_DADO_2 => if fim_cont = '0' then Eprox <= ESPERA_TICK_2;
-                                   else                    Eprox <= RECEBE_PRONTO;
+                                   else                    Eprox <= ESPERA_TIMER;
                                    end if;
                                       
-            when RECEBE_PRONTO  =>  Eprox <= ESPERA_RECEBE;
-            when others =>          Eprox <= ESPERA_RECEBE;
+            when ESPERA_TIMER  =>  if recebe_dado = '1' then Eprox <= LEITURA_START;
+                                   else                   Eprox <= ESPERA_TIMER;
+                                   end if;
+            when others =>            Eprox <= ESPERA_RECEBE;
         end case;
     end process;
 	 
@@ -79,7 +81,7 @@ begin
 							 '0' when others;
 	 
 	with Eatual select
-		pronto <= '1' when RECEBE_PRONTO,
+		pronto <= '1' when ESPERA_TIMER,
 			     	 '0' when others;
 	 
     with Eatual select
@@ -102,7 +104,7 @@ begin
                   "0011" when LEITURA_DADO_1,
 						"0100" when ESPERA_TICK_2,
                   "0101" when LEITURA_DADO_2,
-                  "0110" when RECEBE_PRONTO,                   
+                  "0110" when ESPERA_TIMER,                   
                   "1111" when others;
 						  
 end arch;

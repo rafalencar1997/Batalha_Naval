@@ -16,7 +16,8 @@ entity recebe_mensagem is
 		--Saídas Dados
 		reg_jogada_L:	 out STD_LOGIC_VECTOR(6 downto 0);
 		reg_jogada_C:	 out STD_LOGIC_VECTOR(6 downto 0);
-		reg_mensagem:	 out STD_LOGIC_VECTOR(6 downto 0)
+		reg_mensagem:	 out STD_LOGIC_VECTOR(6 downto 0);
+		estado:		 	 out STD_LOGIC_VECTOR(6 downto 0)
 	);
 end recebe_mensagem;
 
@@ -46,7 +47,8 @@ architecture recebe_mensagem_arch of recebe_mensagem is
          enable_regC:   out STD_LOGIC;
          enable_regM:   out STD_LOGIC;
 			recebe_dado:   out STD_LOGIC;
-			recebe_pronto: out STD_LOGIC
+			recebe_pronto: out STD_LOGIC;
+			estado:		 out STD_LOGIC_VECTOR(3 downto 0)
 		);
 	end component;
 	-- Registrador
@@ -61,11 +63,20 @@ architecture recebe_mensagem_arch of recebe_mensagem is
 		);
 	end component;
 	
+	component hex7seg is
+		port (
+			x : in std_logic_vector(3 downto 0);
+			enable : in std_logic;
+			hex_output : out std_logic_vector(6 downto 0)
+		);
+	end component;
+	
 	-- Sinais
 	signal s_rx_pronto: 							    STD_LOGIC;
    signal s_enable_L, s_enable_C, s_enable_M: STD_LOGIC;
 	signal s_dado_rec: 								 STD_LOGIC_VECTOR(6 downto 0);
 	signal s_recebe_dado: 							 STD_LOGIC;
+	signal s_estado: 									 STD_LOGIC_VECTOR(3 downto 0);
 	
 begin
 	
@@ -130,8 +141,15 @@ begin
 		enable_regC   => s_enable_C,
 		enable_regM   => s_enable_M, 
 		recebe_dado   => s_recebe_dado,
-		recebe_pronto  => recebe_pronto
+		recebe_pronto => recebe_pronto,
+		estado        => s_estado 
     );
   
+	HEX: hex7seg
+	port map(
+			x => s_estado,
+			enable => '1',
+			hex_output => estado
+	);
   
 end recebe_mensagem_arch;

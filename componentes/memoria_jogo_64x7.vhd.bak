@@ -21,7 +21,7 @@ ARCHITECTURE ram1 OF memoria_jogo_64x7 IS
   signal endereco: STD_LOGIC_VECTOR(5 DOWNTO 0);
 BEGIN
 
-  PROCESS(we, endereco,linha, coluna)
+  PROCESS(we, endereco)
   BEGIN
 	  endereco <= linha & coluna;
         IF rising_edge(we) THEN  
