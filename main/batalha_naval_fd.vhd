@@ -20,7 +20,7 @@ entity batalha_naval_fd is
 			 jogada_L: 						 out STD_LOGIC_VECTOR(6 downto 0);
 			 jogada_C: 						 out STD_LOGIC_VECTOR(6 downto 0);
 			 resultado_jogada: 			 out STD_LOGIC_VECTOR(1 downto 0);
-			 
+			 estado_REC:                out STD_LOGIC_VECTOR(6 downto 0);
 			 -- Controle Enviar
 			 enviar_enable:   in  STD_LOGIC;
 			 mensagem:        in  STD_LOGIC_VECTOR(2 downto 0);
@@ -69,7 +69,8 @@ architecture batalha_naval_fd_arc of batalha_naval_fd is
 			--Saídas Dados
 			reg_jogada_L:	 out STD_LOGIC_VECTOR(6 downto 0);
 			reg_jogada_C:	 out STD_LOGIC_VECTOR(6 downto 0);
-			reg_mensagem:	 out STD_LOGIC_VECTOR(6 downto 0)
+			reg_mensagem:	 out STD_LOGIC_VECTOR(6 downto 0);
+			estado:		 	 out STD_LOGIC_VECTOR(6 downto 0)
 		);
 	end component;
 	
@@ -121,22 +122,22 @@ begin
 		s_entrada_serial <= entrada_serial_terminal when '1',
 							     entrada_serial_adversario when others; 
 	
-	
 	-- Recebe Jogada
 	RJ: recebe_mensagem
 	port map(
 		clock          => clock, 
-		reset  			=> reset,      
+		reset  			=> reset,
+		recebe_enable	=> recebe_enable,
+		jog_Nmsg			=> jog_Nmsg, 	
 		entrada_serial => s_entrada_serial,  
-		recebe_enable	=> recebe_enable, 
-		jog_Nmsg			=> jog_Nmsg, 
 		recebe_erro		=> recebe_erro, 
 		recebe_pronto	=> recebe_pronto, 
 		reg_jogada_L	=> s_jogada_L, 
 		reg_jogada_C	=> s_jogada_C, 
-		reg_mensagem	=> s_mensagem 
+		reg_mensagem	=> s_mensagem,
+		estado 			=> estado_REC
 	);
-	--dfdcsdddfsds
+
 	-- Envia Mensagem
 	EM: envia_mensagem
 	port map(

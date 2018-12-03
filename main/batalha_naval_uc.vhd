@@ -85,7 +85,7 @@ begin
 			--												else            	Snext <= MARCA_JOGADA_TERMINAL;
 			--												end if; 
 											 
-			when MARCA_JOGADA_TERMINAL 		=> if opera_pronto='1' then Snext <= PASSA_VEZ;
+			when MARCA_JOGADA_TERMINAL 		=> if opera_pronto='1' then Snext <= IMPRIME_2;
 															else 						    Snext <= MARCA_JOGADA_TERMINAL;
 															end if;
 															
@@ -126,7 +126,7 @@ begin
 		jog_Nmsg <= '1' when RECEBE_JOGADA_TERMINAL | RECEBE_JOGADA_ADVERSARIO,
 						'0' when others;
 	with Sreg select
-		term_Nadv <= '1' when RECEBE_JOGADA_TERMINAL | RECEBE_JOGADA_ADVERSARIO | ESPERA_VEZ | RECEBE_RESPOSTA,
+		term_Nadv <= '1' when RECEBE_JOGADA_TERMINAL ,
 						 '0' when others;	
 	with Sreg select
 		recebe_enable <= '1' when RECEBE_JOGADA_TERMINAL | RECEBE_JOGADA_ADVERSARIO | RECEBE_RESPOSTA,
@@ -148,21 +148,21 @@ begin
 						 VERIFICA when VERIFICA_JOGADA_ADVERSARIO,
 						 "11" when others;
 	with Sreg select
-		estado <= "0000" when INICIAL, 
-					 "0001" when ESPERA_VEZ, 
-					 "0010" when IMPRIME_1, 
-					 "0011" when RECEBE_JOGADA_TERMINAL, 
-					 "0100" when ENVIA_JOGADA, 
-					 "0101" when RECEBE_RESPOSTA,  
-					 "0110" when MARCA_JOGADA_TERMINAL, 
-				    "0111" when IMPRIME_2,
-					 "1000" when PASSA_VEZ, 
-					 "1001" when RECEBE_JOGADA_ADVERSARIO, 
-					 "1010" when VERIFICA_JOGADA_ADVERSARIO, 
-					 "1011" when MARCA_JOGADA_ADVERSARIO, 
-					 "1100" when ENVIA_RESPOSTA, 
-					 "1101" when MENSAGEM_ERRO,
-					 "1111" when others;
+		estado <= "0000" when INICIAL,  							-- 0
+					 "0001" when ESPERA_VEZ, 						-- 1
+					 "0010" when IMPRIME_1, 						-- 2
+					 "0011" when RECEBE_JOGADA_TERMINAL,   	-- 3
+					 "0100" when ENVIA_JOGADA, 					-- 4
+					 "0101" when RECEBE_RESPOSTA,  				-- 5
+					 "0110" when MARCA_JOGADA_TERMINAL, 		-- 6
+				    "0111" when IMPRIME_2,							-- 7
+					 "1000" when PASSA_VEZ, 						-- 8
+					 "1001" when RECEBE_JOGADA_ADVERSARIO, 	-- 9
+					 "1010" when VERIFICA_JOGADA_ADVERSARIO,  -- A
+					 "1011" when MARCA_JOGADA_ADVERSARIO, 		-- B
+					 "1100" when ENVIA_RESPOSTA, 					-- C
+					 "1101" when MENSAGEM_ERRO,					-- D
+					 "1111" when others;								-- F
 	
 
 end batalha_naval_uc_arc;

@@ -10,13 +10,16 @@ entity batalha_naval is
 			 entrada_serial_adversario: in  STD_LOGIC;
 			 saida_serial_terminal: 	 out STD_LOGIC;
 			 saida_serial_adversario:   out STD_LOGIC;
-			 estado: 						 out STD_LOGIC_VECTOR(6 downto 0);
 			 jogada_L: 						 out STD_LOGIC_VECTOR(6 downto 0);
 			 jogada_C: 						 out STD_LOGIC_VECTOR(6 downto 0);
 			 resultado_jogada: 			 out STD_LOGIC_VECTOR(1 downto 0);
-			 jogador_da_vez: 				 out STD_LOGIC_VECTOR(6 downto 0)
+			 jogador_da_vez: 				 out STD_LOGIC_VECTOR(6 downto 0);
 			 --placar_jogador: 				 out STD_LOGIC_VECTOR(6 downto 0);
 			 --placar_adversario: 			 out STD_LOGIC_VECTOR(6 downto 0)
+			 
+			 -- Depuração
+			 estado: 						 out STD_LOGIC_VECTOR(6 downto 0);
+			 estado_REC: 					out STD_LOGIC_VECTOR(6 downto 0)
     );
 end batalha_naval;
 
@@ -64,7 +67,7 @@ architecture batalha_naval_arc of batalha_naval is
 			 jogada_L: 						 out STD_LOGIC_VECTOR(6 downto 0);
 			 jogada_C: 						 out STD_LOGIC_VECTOR(6 downto 0);
 			 resultado_jogada: 			 out STD_LOGIC_VECTOR(1 downto 0);
-			 
+			 estado_REC:                out STD_LOGIC_VECTOR(6 downto 0);
 			 -- Controle Enviar
 			 enviar_enable:   in  STD_LOGIC;
 			 mensagem:        in  STD_LOGIC_VECTOR(2 downto 0);
@@ -156,6 +159,7 @@ begin
 		jogada_L							=> jogada_L, 
 		jogada_C							=> jogada_C, 
 		resultado_jogada				=> resultado_jogada, 
+		estado_REC                 => estado_REC,
 		-- Controle Enviar
 		enviar_enable				=> s_envia_enable, 
 		mensagem						=> s_mensagem, 
@@ -170,12 +174,12 @@ begin
 		saida_serial_terminal	=> saida_serial_terminal   
 	); 
 
+	
 	HEX: hex7seg
 	port map(
 		x => s_estado,
 		enable => '1',
 		hex_output => estado
 	);
-	
 	
 end batalha_naval_arc;
