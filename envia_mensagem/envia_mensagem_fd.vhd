@@ -3,22 +3,16 @@ use IEEE.std_logic_1164.all;
 
 entity envia_mensagem_fd is
 	port (
-		clock: 				in STD_LOGIC;
-		reset:				in STD_LOGIC;
-		
-		mensagem: 			in STD_LOGIC_VECTOR(2 downto 0); -- seletor da mensagem no mux;
-		enviar:				in STD_LOGIC;
-		
-		jogada_1, jogada_2:		in std_LOGIC_VECTOR(6 downto 0);
-		
-		caractere_jogada: in STD_LOGIC_VECTOR(2 downto 0);
-		
-		saida_serial:		out STD_LOGIC;
-		pronto:				out STD_LOGIC
+		clock: 					in STD_LOGIC;
+		reset:					in STD_LOGIC;
+		enviar:					in STD_LOGIC;
+		mensagem: 				in STD_LOGIC_VECTOR(2 downto 0); -- seletor da mensagem no mux;
+		caractere_jogada: 	in STD_LOGIC_VECTOR(2 downto 0);
+		jogada_L, jogada_C:	in std_LOGIC_VECTOR(6 downto 0);
+		saida_serial:			out STD_LOGIC;
+		tx_pronto:				out STD_LOGIC
 	);
-
 end envia_mensagem_fd;
- 
 
 architecture arch of envia_mensagem_fd is 
 				
@@ -37,8 +31,8 @@ architecture arch of envia_mensagem_fd is
 	begin
 		
 	with caractere_jogada select
-	s_caractere <= jogada_1   when "000",
-						jogada_2   when "001",
+	s_caractere <= jogada_L   when "000",
+						jogada_C   when "001",
 					   "0000000"  when others;
 	
 	with mensagem select
@@ -52,14 +46,14 @@ architecture arch of envia_mensagem_fd is
 	
 	TX: tx_serial
 	port map(
-        clock => clock,
-		  reset => reset,
-		  partida => enviar,
-        dados_ascii => s_mensagem,
+        clock 				 => clock,
+		  reset 				 => reset,
+		  partida 			 => enviar,
+        dados_ascii 		 => s_mensagem,
         transm_andamento => open,
-		  saida_serial => saida_serial,
-		  pronto => pronto,
-		  estado => open
+		  saida_serial 	 => saida_serial,
+		  pronto 			 => tx_pronto,
+		  estado 			 => open
 	); 
 	 
 end arch;
