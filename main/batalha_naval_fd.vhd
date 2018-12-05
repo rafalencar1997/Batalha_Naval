@@ -88,10 +88,10 @@ architecture batalha_naval_fd_arc of batalha_naval_fd is
 	-- Operações do Campo
 	component print_escreve_campo
 		port (
-        clock, reset, iniciar: in std_logic;
+         clock, reset, iniciar, vez: in std_logic;
         operacao: in std_logic_vector(1 downto 0);
-		  dado: in std_logic_vector(6 downto 0);
-        endereco: in std_logic_vector(13 downto 0);
+		dado: in std_logic_vector(6 downto 0);
+		endereco: in std_logic_vector(13 downto 0);
         saida_serial, pronto : out std_logic;
 		  resultado_jogada : out std_logic_vector(1 downto 0);
         -- depuracao
@@ -163,6 +163,7 @@ begin
 		clock				  => clock, 
 		reset            => reset, 
 		iniciar          => opera_enable,
+		vez				  => vez,
 		operacao         => operacao,  
 		dado             => s_mensagem,
 		endereco         => s_jogada_L & s_jogada_C,

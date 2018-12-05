@@ -14,8 +14,7 @@ use IEEE.std_logic_arith.all;
 entity print_escreve_campo is
     port (
         clock, reset, iniciar, vez: in std_logic;
-        operacao: in std_logic_vector(1 downto 0);
-		  dado: in std_logic_vector(6 downto 0);
+        operacao, dado: in std_logic_vector(1 downto 0);
         endereco: in std_logic_vector(13 downto 0);
         saida_serial, pronto : out std_logic;
 		  resultado_jogada : out std_logic_vector(1 downto 0);
@@ -53,8 +52,7 @@ architecture print_escreve_campo of print_escreve_campo is
         we: in std_logic;
         conta, zera, carrega: in std_logic;
         endereco: in std_logic_vector(13 downto 0);
-        sel: in std_logic_vector(1 downto 0);
-		  dado: in std_logic_vector( 6 downto 0);
+        dado, sel: in std_logic_vector(1 downto 0);
         fim, fim_linha: out std_logic;
         saida_serial, pronto : out std_logic;
 		  resultado_jogada: out std_logic_vector(1 downto 0);
@@ -63,7 +61,7 @@ architecture print_escreve_campo of print_escreve_campo is
      );
     end component;
     
-    component edge_detector_2 is port (
+    component edge_detector is port (
   i_clk                       : in  std_logic;
   i_rstb                      : in  std_logic;
   i_input                     : in  std_logic;
@@ -81,7 +79,7 @@ begin
                                  fim=>s_fim, fim_linha=>s_fim_linha, 
                                  saida_serial=>saida_serial, pronto=>s_pronto, resultado_jogada=>resultado_jogada,
                                  db_q=>s_q, db_dados=>db_dados);
-    U3: edge_detector_2 port map (clock, '1', not iniciar, s_iniciar);
+    U3: edge_detector port map (clock, '1', not iniciar, s_iniciar);
 
 
 -- depuracao
