@@ -20,7 +20,6 @@ entity batalha_naval_fd is
 			 jogada_L: 						 out STD_LOGIC_VECTOR(6 downto 0);
 			 jogada_C: 						 out STD_LOGIC_VECTOR(6 downto 0);
 			 resultado_jogada: 			 out STD_LOGIC_VECTOR(1 downto 0);
-			 estado_REC:                out STD_LOGIC_VECTOR(6 downto 0);
 			 -- Controle Enviar
 			 enviar_enable:   in  STD_LOGIC;
 			 mensagem:        in  STD_LOGIC_VECTOR(2 downto 0);
@@ -77,13 +76,13 @@ architecture batalha_naval_fd_arc of batalha_naval_fd is
 	-- Envia Mensagem
 	component envia_mensagem
 		port (
-		enviar, reset, clock: 	in std_logic;
-		mensagem: 					in std_logic_vector(2 downto 0);
-		
-		jogada_1, jogada_2:		in std_LOGIC_VECTOR(6 downto 0);
-		
-		saida_serial, pronto, envia_pronto:	out std_logic
-	);
+			clock, reset: 			in std_logic;
+			enviar_enable:       in std_logic;
+			mensagem: 				in std_logic_vector(2 downto 0);
+			jogada_L, jogada_C:	in std_LOGIC_VECTOR(6 downto 0);
+			saida_serial:			out std_logic;
+			envia_pronto:			out std_logic
+		);
 	end component;
 	
 	-- Operações do Campo
@@ -111,6 +110,13 @@ architecture batalha_naval_fd_arc of batalha_naval_fd is
 	);
 	end component;
 	
+	component ascii_to_7seg
+		port ( 
+			jogada_linha, jogada_coluna: in std_logic_vector(6 downto 0);
+         linha, coluna: out std_logic_vector (6 downto 0) 
+		);
+	end component;
+	
 	signal s_entrada_serial: STD_LOGIC; 
 	signal s_jogada_L:       STD_LOGIC_VECTOR(6 downto 0);
 	signal s_jogada_C:       STD_LOGIC_VECTOR(6 downto 0);
@@ -135,21 +141,20 @@ begin
 		reg_jogada_L	=> s_jogada_L, 
 		reg_jogada_C	=> s_jogada_C, 
 		reg_mensagem	=> s_mensagem,
-		estado 			=> estado_REC
+		estado 			=> open
 	);
 
 	-- Envia Mensagem
 	EM: envia_mensagem
 	port map(
-		clock        => clock,
-		reset        => reset,
-		enviar       => enviar_enable,
-		mensagem     => mensagem,
-		jogada_1     => s_jogada_L,
-		jogada_2		 => s_jogada_C,
-		saida_serial => saida_serial_adversario,
-		pronto       => open,
-		envia_pronto => enviar_pronto
+		clock         => clock,
+		reset         => reset,
+		enviar_enable => enviar_enable,
+		mensagem      => mensagem,
+		jogada_L      => s_jogada_L,
+		jogada_C		  => s_jogada_C,
+		saida_serial  => saida_serial_adversario,
+		envia_pronto  => enviar_pronto
 	);
 	
 	-- Operações Campo
@@ -178,9 +183,13 @@ begin
 		db_sel				=> open,
 		db_dados				=> open
 	);
-		
-	jogada_L<= s_jogada_L;
-	jogada_C<= s_jogada_L;
 	
+	ASC_7SEG: ascii_to_7seg
+	port map ( 
+			jogada_linha =>  s_jogada_L,
+			jogada_coluna => s_jogada_C,
+         linha         => jogada_L,
+			coluna        => jogada_C
+	);
 	
 end batalha_naval_fd_arc;
