@@ -12,11 +12,12 @@ entity recebe_mensagem is
 		entrada_serial: in STD_LOGIC; 
 		--Saídas Controle
 		recebe_erro:    out STD_LOGIC;
-		recebe_pronto:  out STD_LOGIC;
+		recebe_pronto:  buffer STD_LOGIC;
+		recebe_vez:     out STD_LOGIC;
 		--Saídas Dados
 		reg_jogada_L:	 out STD_LOGIC_VECTOR(6 downto 0);
 		reg_jogada_C:	 out STD_LOGIC_VECTOR(6 downto 0);
-		reg_mensagem:	 out STD_LOGIC_VECTOR(6 downto 0);
+		reg_mensagem:	 buffer STD_LOGIC_VECTOR(6 downto 0);
 		estado:		 	 out STD_LOGIC_VECTOR(6 downto 0)
 	);
 end recebe_mensagem;
@@ -151,5 +152,8 @@ begin
 			enable => '1',
 			hex_output => estado
 	);
+	
+	recebe_vez <= '1' when (reg_mensagem = "1010110" and recebe_pronto = '1');
+
   
 end recebe_mensagem_arch;

@@ -6,14 +6,13 @@ use IEEE.std_logic_arith.all;
 entity batalha_naval_fd is
     port (clock, reset: 		       in STD_LOGIC;
 			 vez:						       in STD_LOGIC;
-			 
 			 -- Controle Recebe
 			 term_Nadv:                 in  STD_LOGIC;
 			 jog_Nmsg:                  in  STD_LOGIC;
 			 recebe_enable: 				 in  STD_LOGIC;
 			 recebe_erro: 					 out STD_LOGIC;
 			 recebe_pronto:				 out STD_LOGIC;
-			 
+			 recebe_vez:				    out STD_LOGIC;
 			 -- Dados Recebe
 			 entrada_serial_terminal:   in STD_LOGIC;
 			 entrada_serial_adversario: in STD_LOGIC;
@@ -64,11 +63,12 @@ architecture batalha_naval_fd_arc of batalha_naval_fd is
 			entrada_serial: in STD_LOGIC; 
 			--Saídas Controle
 			recebe_erro:    out STD_LOGIC;
-			recebe_pronto:  out STD_LOGIC;
+			recebe_pronto:  buffer STD_LOGIC;
+			recebe_vez:     out STD_LOGIC;
 			--Saídas Dados
 			reg_jogada_L:	 out STD_LOGIC_VECTOR(6 downto 0);
 			reg_jogada_C:	 out STD_LOGIC_VECTOR(6 downto 0);
-			reg_mensagem:	 out STD_LOGIC_VECTOR(6 downto 0);
+			reg_mensagem:	 buffer STD_LOGIC_VECTOR(6 downto 0);
 			estado:		 	 out STD_LOGIC_VECTOR(6 downto 0)
 		);
 	end component;
@@ -138,6 +138,7 @@ begin
 		entrada_serial => s_entrada_serial,  
 		recebe_erro		=> recebe_erro, 
 		recebe_pronto	=> recebe_pronto, 
+		recebe_vez     => recebe_vez,
 		reg_jogada_L	=> s_jogada_L, 
 		reg_jogada_C	=> s_jogada_C, 
 		reg_mensagem	=> s_mensagem,

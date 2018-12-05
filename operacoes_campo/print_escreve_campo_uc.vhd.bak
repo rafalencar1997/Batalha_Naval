@@ -69,8 +69,9 @@ begin
 										 end if;
       when escreve_memoria => Snext <= final;
 		
-		when verifica_jogada => Snext <= final;
-										
+		when verifica_jogada => if iniciar = '1' then Snext <= final;
+										else Snext <= verifica_jogada;
+										end if;
 
       when others =>           Snext <= inicial;
     end case;

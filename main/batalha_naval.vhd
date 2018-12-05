@@ -6,7 +6,7 @@ use IEEE.std_logic_arith.all;
 entity batalha_naval is
     port (clock, reset: 				 in  STD_LOGIC;
 			 jogar:							 in  STD_LOGIC;
-			 vez:								 in  STD_LOGIC;
+			 vez_inicio:					 in  STD_LOGIC;
 			 entrada_serial_terminal: 	 in  STD_LOGIC;
 			 entrada_serial_adversario: in  STD_LOGIC;
 			 saida_serial_terminal: 	 out STD_LOGIC;
@@ -30,10 +30,12 @@ architecture batalha_naval_arc of batalha_naval is
 		port(	
 			clock, reset: 			in STD_LOGIC;
 			jogar:					in STD_LOGIC;
-			vez: 						in STD_LOGIC;	
+			vez_inicio: 			in STD_LOGIC;
+		   vez: 						out STD_LOGIC;	
 			resposta_jogada:     in STD_LOGIC_VECTOR(1 downto 0);
 			estado: 					out STD_LOGIC_VECTOR(3 downto 0);
 			-- Controle Recebe
+			recebe_vez: 			in STD_LOGIC;
 			recebe_erro:         in STD_LOGIC;
 			recebe_pronto: 		in STD_LOGIC;
 			recebe_enable:       out STD_LOGIC;
@@ -61,7 +63,7 @@ architecture batalha_naval_arc of batalha_naval is
 			 recebe_enable: 				 in  STD_LOGIC;
 			 recebe_erro: 					 out STD_LOGIC;
 			 recebe_pronto:				 out STD_LOGIC;
-			 
+			 recebe_vez:				    out STD_LOGIC;
 			 -- Dados Recebe
 			 entrada_serial_terminal:   in STD_LOGIC;
 			 entrada_serial_adversario: in STD_LOGIC;
@@ -98,23 +100,26 @@ architecture batalha_naval_arc of batalha_naval is
 		);
 	end component;
 	
-	signal s_recebe_pronto: 		 STD_LOGIC; 
-	signal s_operacao_pronto: 		 STD_LOGIC; 
-	signal s_envia_pronto:  		 STD_LOGIC;
+	signal s_recebe_pronto:   STD_LOGIC; 
+	signal s_operacao_pronto: STD_LOGIC; 
+	signal s_envia_pronto:    STD_LOGIC;
 
-	signal s_recebe_enable: 		 STD_LOGIC; 
-	signal s_operacao_enable: 		 STD_LOGIC; 
-	signal s_envia_enable:  		 STD_LOGIC; 
+	signal s_recebe_enable:   STD_LOGIC; 
+	signal s_operacao_enable: STD_LOGIC; 
+	signal s_envia_enable:    STD_LOGIC; 
 	
+	signal s_recebe_vez:      STD_LOGIC;
+	signal s_jog_Nmsg: 		  STD_LOGIC; 
+	signal s_term_Nadv:  	  STD_LOGIC; 
+	signal s_recebe_erro:     STD_LOGIC;
+	signal s_mensagem:        STD_LOGIC_VECTOR(2 downto 0);
 	
-	signal s_jog_Nmsg: 		 	 STD_LOGIC; 
-	signal s_term_Nadv:  		 STD_LOGIC; 
-	signal s_recebe_erro:       STD_LOGIC;
-	signal s_mensagem:          STD_LOGIC_VECTOR(2 downto 0);
+	signal s_operacao:        STD_LOGIC_VECTOR(1 downto 0);
+	signal s_estado:          STD_LOGIC_VECTOR(3 downto 0);
+	signal s_result_jogada:	  STD_LOGIC_VECTOR(1 downto 0);
 	
-	signal s_operacao:          STD_LOGIC_VECTOR(1 downto 0);
-	signal s_estado:          STD_LOGIC_VECTOR(3 downto 0);	
-
+	signal s_vez: 				  STD_LOGIC;
+	
 begin 
 	
 	-- Unidade de Controle
@@ -123,10 +128,12 @@ begin
 		clock           => clock, 
 		reset				 => not reset,
 		jogar				 => not jogar,
-		vez				 => vez,
-		resposta_jogada => "11", 
+		vez_inicio		 => vez_inicio,
+		vez				 => s_vez,
+		resposta_jogada => s_result_jogada, 
 		estado  			 => s_estado,
 		-- Controle Recebe
+		recebe_vez		 => s_recebe_vez,
 		recebe_erro		 => s_recebe_erro,
 		recebe_pronto	 => s_recebe_pronto, 
 		recebe_enable	 => s_recebe_enable,
@@ -147,19 +154,20 @@ begin
 	port map(
 		clock								=> clock,  
 		reset								=> not reset , 
-		vez								=> vez, 		 
+		vez								=> s_vez, 		 
 		-- Controle Recebe
 		term_Nadv  						=> s_term_Nadv,                 
 		jog_Nmsg							=> s_jog_Nmsg, 
 		recebe_enable					=> s_recebe_enable, 
 		recebe_erro						=> s_recebe_erro, 
 		recebe_pronto					=> s_recebe_pronto, 
+		recebe_vez                 => s_recebe_vez,
 		-- Dados Recebe
 		entrada_serial_terminal		=> entrada_serial_terminal, 
 		entrada_serial_adversario	=> entrada_serial_adversario, 
 		jogada_L							=> jogada_L, 
 		jogada_C							=> jogada_C, 
-		resultado_jogada				=> resultado_jogada, 
+		resultado_jogada				=> s_result_jogada, 
 		-- Controle Enviar
 		enviar_enable				=> s_envia_enable, 
 		mensagem						=> s_mensagem, 

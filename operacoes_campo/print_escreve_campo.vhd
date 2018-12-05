@@ -73,7 +73,7 @@ architecture print_escreve_campo of print_escreve_campo is
 begin
 
     -- sinais reset e partida mapeados em botoes ativos em alto
-    U1: print_escreve_campo_uc port map (clock=>clock, reset=> not reset, iniciar=>s_iniciar, operacao=>operacao, pronto=>s_pronto, 
+    U1: print_escreve_campo_uc port map (clock=>clock, reset=> reset, iniciar=>s_iniciar, operacao=>operacao, pronto=>s_pronto, 
                                  fim=>s_fim, fim_linha=>s_fim_linha, zera=>s_zera, reseta=>s_reseta, conta=>s_conta,
                                  carrega=>s_carrega, we=>s_we, partida=>s_partida, pronto_out=>pronto, sel=>s_sel, enable_led=>s_enable_led);
     U2: print_escreve_campo_fd port map (clock=>clock, reset=>s_reseta, partida=>s_partida ,vez => vez, we=>s_we, enable_led=>s_enable_led,
@@ -81,7 +81,7 @@ begin
                                  fim=>s_fim, fim_linha=>s_fim_linha, 
                                  saida_serial=>saida_serial, pronto=>s_pronto, resultado_jogada=>resultado_jogada,
                                  db_q=>s_q, db_dados=>db_dados);
-    U3: edge_detector_2 port map (clock, '1', not iniciar, s_iniciar);
+    U3: edge_detector_2 port map (clock, '1', iniciar, s_iniciar);
 
 
 -- depuracao

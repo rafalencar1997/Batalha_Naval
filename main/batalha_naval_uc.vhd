@@ -5,10 +5,12 @@ entity batalha_naval_uc is
 	port(	
 		clock, reset: 			in STD_LOGIC;
 		jogar:					in STD_LOGIC;
-		vez: 						in STD_LOGIC;	
+		vez_inicio: 			in STD_LOGIC;
+		vez: 						out STD_LOGIC;
 		resposta_jogada:     in STD_LOGIC_VECTOR(1 downto 0);
 		estado: 					out STD_LOGIC_VECTOR(3 downto 0);
 		-- Controle Recebe
+		recebe_vez: 			in STD_LOGIC;
 		recebe_erro:         in STD_LOGIC;
 		recebe_pronto: 		in STD_LOGIC;
 		recebe_enable:       out STD_LOGIC;
@@ -32,10 +34,14 @@ architecture batalha_naval_uc_arc of batalha_naval_uc is
 	constant VERIFICA : STD_LOGIC_VECTOR(1 downto 0) := "10";
 
 	type State_type is (
-		INICIAL, DECIDE_JOGADOR, ESPERA_VEZ, IMPRIME_1, RECEBE_JOGADA_TERMINAL, 
-		ENVIA_JOGADA, RECEBE_RESPOSTA,  MARCA_JOGADA_TERMINAL, IMPRIME_2,PASSA_VEZ, 
-		RECEBE_JOGADA_ADVERSARIO, VERIFICA_JOGADA_ADVERSARIO, 
-		MARCA_JOGADA_ADVERSARIO, ENVIA_RESPOSTA, MENSAGEM_ERRO
+		INICIAL, DECIDE_JOGADOR, 
+		ESPERA_VEZ, PASSA_VEZ,
+		ENVIA_JOGADA, ENVIA_RESPOSTA, RECEBE_RESPOSTA, 
+		IMPRIME_A_1,  IMPRIME_A_2, IMPRIME_J, DELAY_1, DELAY_2,
+		MARCA_JOGADA_ADVERSARIO,    MARCA_JOGADA_TERMINAL, 
+		RECEBE_JOGADA_ADVERSARIO,   RECEBE_JOGADA_TERMINAL,
+		VERIFICA_JOGADA_ADVERSARIO, VERIFICA_JOGADA_TERMINAL, 
+		MENSAGEM_ERRO
 	);
 	 
    signal Sreg, Snext: State_type;  -- current state and next state
@@ -53,7 +59,7 @@ begin
 	end process;
 
 	-- next-state logic
-	process (jogar, vez, recebe_pronto, resposta_jogada, envia_pronto, opera_pronto, Sreg) 
+	process (jogar, vez_inicio, recebe_vez, recebe_pronto, resposta_jogada, envia_pronto, opera_pronto, Sreg) 
 	begin
 		case Sreg is
 	 
@@ -61,20 +67,21 @@ begin
 															else               Snext <= INICIAL;
 															end if;
 															
-			when DECIDE_JOGADOR					=> if vez ='1' then Snext <= RECEBE_JOGADA_TERMINAL;
-															else             Snext <= RECEBE_JOGADA_ADVERSARIO;
+			when DECIDE_JOGADOR					=> if vez_inicio ='1' then Snext <= IMPRIME_A_1;
+															else             			Snext <= RECEBE_JOGADA_ADVERSARIO;
 															end if;
-		 
-			when ESPERA_VEZ 				 		=> if vez ='1' then Snext <= IMPRIME_1;
-															else             Snext <= ESPERA_VEZ;
-															end if;
-															
-			when IMPRIME_1							=>	if opera_pronto = '1' then Snext <= RECEBE_JOGADA_TERMINAL;
-															else             		 		Snext <= IMPRIME_1;
+		 														
+			when IMPRIME_A_1						=>	if opera_pronto = '1' then Snext <= RECEBE_JOGADA_TERMINAL;
+															else             		 		Snext <= IMPRIME_A_1;
 															end if; 									
 															
 			when RECEBE_JOGADA_TERMINAL 		=> if recebe_pronto ='1' then Snext <= ENVIA_JOGADA;
 															else                       Snext <= RECEBE_JOGADA_TERMINAL;
+															end if;
+															
+			when VERIFICA_JOGADA_TERMINAL 	=> if resposta_jogada ="11" then Snext <= MENSAGEM_ERRO;
+															elsif	opera_pronto='1'   then Snext <= ENVIA_JOGADA;
+															else 							      Snext <= VERIFICA_JOGADA_TERMINAL;
 															end if;
 														
 											 
@@ -85,41 +92,50 @@ begin
 			when RECEBE_RESPOSTA 				=> if recebe_pronto ='1' then Snext <= MARCA_JOGADA_TERMINAL;
 															else            				Snext <= RECEBE_RESPOSTA;
 															end if; 
-															
-			--when VERIFICA_RESPOSTA 				=> if erro ='1' then Snext <= MENSAGEM_ERRO;
-			--												else            	Snext <= MARCA_JOGADA_TERMINAL;
-			--												end if; 
 											 
-			when MARCA_JOGADA_TERMINAL 		=> if opera_pronto='1' then Snext <= IMPRIME_2;
+			when MARCA_JOGADA_TERMINAL 		=> if opera_pronto='1' then Snext <= DELAY_1;
 															else 						    Snext <= MARCA_JOGADA_TERMINAL;
 															end if;
 															
-			when IMPRIME_2							=>	if opera_pronto = '1' then Snext <= PASSA_VEZ;
-															else             		 		Snext <= IMPRIME_2;
+			when DELAY_1								=> Snext <= IMPRIME_A_2;
+			
+																														
+			when IMPRIME_A_2						=>	if opera_pronto = '1' then Snext <= PASSA_VEZ;
+															else             		 		   Snext <= IMPRIME_A_2;
 															end if; 
 			
 			when PASSA_VEZ 						=> if envia_pronto ='1' then Snext <= RECEBE_JOGADA_ADVERSARIO;
 															else            			  Snext <= PASSA_VEZ;
-															end if; 
+															end if; 											
 											 
 			when RECEBE_JOGADA_ADVERSARIO 	=> if recebe_pronto ='1' then Snext <= VERIFICA_JOGADA_ADVERSARIO;
 															else            			  Snext <= RECEBE_JOGADA_ADVERSARIO;
 															end if;
 			
 			when VERIFICA_JOGADA_ADVERSARIO 	=> if resposta_jogada ="11" then Snext <= MENSAGEM_ERRO;
-															elsif	opera_pronto='1'   then Snext <= ENVIA_RESPOSTA;
-															else 							      Snext <= MARCA_JOGADA_ADVERSARIO;
+															elsif	opera_pronto='1'   then Snext <= DELAY_2;
+															else 							      Snext <= VERIFICA_JOGADA_ADVERSARIO;
 															end if;
+															
+			when DELAY_2								=> Snext <= MARCA_JOGADA_ADVERSARIO;
 															
 			when MARCA_JOGADA_ADVERSARIO     => if opera_pronto='1' then Snext <= ENVIA_RESPOSTA;
 															else 						    Snext <= MARCA_JOGADA_ADVERSARIO;
 															end if;
 											 
-			when ENVIA_RESPOSTA 					=> if envia_pronto ='1' then Snext <= ESPERA_VEZ;
+			when ENVIA_RESPOSTA 					=> if envia_pronto ='1' then Snext <= IMPRIME_J;
 															else            			  Snext <= ENVIA_RESPOSTA;
 															end if;
+															
+			when IMPRIME_J							=>	if opera_pronto = '1' then Snext <= ESPERA_VEZ;
+															else             		 		Snext <= IMPRIME_J;
+															end if;
 			
-			when MENSAGEM_ERRO 					=> Snext <= MENSAGEM_ERRO;
+			when ESPERA_VEZ 				 		=> if recebe_vez ='1' then Snext <= IMPRIME_A_1;
+															else             			Snext <= ESPERA_VEZ;
+															end if;
+			
+			when MENSAGEM_ERRO 					=> Snext <= RECEBE_JOGADA_ADVERSARIO;
 			
 			
 			when others 							=> Snext <= INICIAL;
@@ -130,38 +146,55 @@ begin
 	with Sreg select
 		jog_Nmsg <= '1' when RECEBE_JOGADA_TERMINAL | RECEBE_JOGADA_ADVERSARIO,
 						'0' when others;
+						
 	with Sreg select
 		term_Nadv <= '1' when RECEBE_JOGADA_TERMINAL ,
-						 '0' when others;	
+						 '0' when others;
+						 
 	with Sreg select
-		recebe_enable <= '1' when RECEBE_JOGADA_TERMINAL | RECEBE_JOGADA_ADVERSARIO | RECEBE_RESPOSTA,
-				           '0' when others;	
+		recebe_enable <= '1' when RECEBE_JOGADA_TERMINAL | RECEBE_JOGADA_ADVERSARIO | 
+										  RECEBE_RESPOSTA | ESPERA_VEZ,
+				           '0' when others;
+							  
 	with Sreg select
 		mensagem  <= "000" 					  when ENVIA_JOGADA,
 				       "010" 					  when PASSA_VEZ,
 						 '1' & resposta_jogada when ENVIA_RESPOSTA,
 						 "110" when others;
+						 
 	with Sreg select
 		enviar_enable  <= '1' when ENVIA_JOGADA | ENVIA_RESPOSTA | PASSA_VEZ,
 				            '0' when others;	
+								
 	with Sreg select
-		opera_enable  <= '1' when VERIFICA_JOGADA_ADVERSARIO | MARCA_JOGADA_ADVERSARIO | MARCA_JOGADA_TERMINAL | IMPRIME_1 | IMPRIME_2,
-				           '0' when others;		
+		opera_enable  <= '1' when VERIFICA_JOGADA_ADVERSARIO | VERIFICA_JOGADA_TERMINAL |
+										  MARCA_JOGADA_ADVERSARIO    | MARCA_JOGADA_TERMINAL    | 
+										  IMPRIME_A_1 | IMPRIME_A_2  | IMPRIME_J,
+				           '0' when others;
+							  
 	with Sreg select
-		operacao  <= IMPRIME  when IMPRIME_1 | IMPRIME_2,
-				       ESCREVE  when MARCA_JOGADA_TERMINAL | MARCA_JOGADA_ADVERSARIO,
-						 VERIFICA when VERIFICA_JOGADA_ADVERSARIO,
+		operacao  <= IMPRIME  when IMPRIME_A_1 | IMPRIME_A_2 | IMPRIME_J,
+				       ESCREVE  when MARCA_JOGADA_TERMINAL     | MARCA_JOGADA_ADVERSARIO,
+						 VERIFICA when VERIFICA_JOGADA_TERMINAL  | VERIFICA_JOGADA_ADVERSARIO,
 						 "11" when others;
+						 
+	with Sreg select
+		vez  <= vez_inicio when INICIAL | DECIDE_JOGADOR, 
+				  '0'        when PASSA_VEZ | RECEBE_JOGADA_ADVERSARIO | VERIFICA_JOGADA_ADVERSARIO |
+										MARCA_JOGADA_ADVERSARIO | ENVIA_RESPOSTA | IMPRIME_J | ESPERA_VEZ, 
+				  '1'  		 when others;
+				  
 	with Sreg select
 		estado <= "0000" when INICIAL,  							-- 0
-					 "0001" when DECIDE_JOGADOR, 					-- 1
-					 "0010" when ESPERA_VEZ, 						-- 2
-					 "0011" when IMPRIME_1,   						-- 3
+					 "0001" when IMPRIME_A_1 | IMPRIME_A_2 |  -- 1
+									 DELAY_1 | DELAY_2 | IMPRIME_J, 					
+					 "0010" when DECIDE_JOGADOR, 					-- 2
+					 "0011" when ESPERA_VEZ,   					-- 3
 					 "0100" when RECEBE_JOGADA_TERMINAL, 		-- 4
-					 "0101" when ENVIA_JOGADA,  					-- 5
-					 "0110" when RECEBE_RESPOSTA, 				-- 6
-				    "0111" when MARCA_JOGADA_TERMINAL,			-- 7
-					 "1000" when IMPRIME_2, 						-- 8
+					 "0101" when VERIFICA_JOGADA_TERMINAL,  	-- 5
+					 "0110" when ENVIA_JOGADA, 					-- 6
+				    "0111" when RECEBE_RESPOSTA,					-- 7
+					 "1000" when MARCA_JOGADA_TERMINAL, 		-- 8
 					 "1001" when PASSA_VEZ, 						-- 9
 					 "1010" when RECEBE_JOGADA_ADVERSARIO,  	-- A
 					 "1011" when VERIFICA_JOGADA_ADVERSARIO, 	-- B
