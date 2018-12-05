@@ -87,7 +87,7 @@ begin
   with Sreg select
       conta <= '1' when incrementa, '0' when others;
   with Sreg select
-      pronto_out <= '1' when final | inicial, '0' when others;
+      pronto_out <= '1' when final, '0' when others;
   with Sreg select
       sel <= "10" when selecionaCR | enviaCR | esperaCR,
              "01" when selecionaNL | enviaNL | esperaNL,

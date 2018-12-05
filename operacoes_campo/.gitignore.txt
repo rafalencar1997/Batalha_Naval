@@ -1,1 +1,2 @@
 *.vhd.bak
+*.bak
