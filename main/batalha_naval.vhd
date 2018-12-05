@@ -5,6 +5,7 @@ use IEEE.std_logic_arith.all;
 
 entity batalha_naval is
     port (clock, reset: 				 in  STD_LOGIC;
+			 jogar:							 in  STD_LOGIC;
 			 vez:								 in  STD_LOGIC;
 			 entrada_serial_terminal: 	 in  STD_LOGIC;
 			 entrada_serial_adversario: in  STD_LOGIC;
@@ -28,6 +29,7 @@ architecture batalha_naval_arc of batalha_naval is
 	component batalha_naval_uc  
 		port(	
 			clock, reset: 			in STD_LOGIC;
+			jogar:					in STD_LOGIC;
 			vez: 						in STD_LOGIC;	
 			resposta_jogada:     in STD_LOGIC_VECTOR(1 downto 0);
 			estado: 					out STD_LOGIC_VECTOR(3 downto 0);
@@ -120,6 +122,7 @@ begin
 	port map(	
 		clock           => clock, 
 		reset				 => not reset,
+		jogar				 => not jogar,
 		vez				 => vez,
 		resposta_jogada => "11", 
 		estado  			 => s_estado,

@@ -4,6 +4,7 @@ use IEEE.std_logic_1164.all;
 entity batalha_naval_uc is 
 	port(	
 		clock, reset: 			in STD_LOGIC;
+		jogar:					in STD_LOGIC;
 		vez: 						in STD_LOGIC;	
 		resposta_jogada:     in STD_LOGIC_VECTOR(1 downto 0);
 		estado: 					out STD_LOGIC_VECTOR(3 downto 0);
@@ -31,7 +32,7 @@ architecture batalha_naval_uc_arc of batalha_naval_uc is
 	constant VERIFICA : STD_LOGIC_VECTOR(1 downto 0) := "10";
 
 	type State_type is (
-		INICIAL, ESPERA_VEZ, IMPRIME_1, RECEBE_JOGADA_TERMINAL, 
+		INICIAL, DECIDE_JOGADOR, ESPERA_VEZ, IMPRIME_1, RECEBE_JOGADA_TERMINAL, 
 		ENVIA_JOGADA, RECEBE_RESPOSTA,  MARCA_JOGADA_TERMINAL, IMPRIME_2,PASSA_VEZ, 
 		RECEBE_JOGADA_ADVERSARIO, VERIFICA_JOGADA_ADVERSARIO, 
 		MARCA_JOGADA_ADVERSARIO, ENVIA_RESPOSTA, MENSAGEM_ERRO
@@ -52,11 +53,15 @@ begin
 	end process;
 
 	-- next-state logic
-	process (vez, recebe_pronto, resposta_jogada, envia_pronto, opera_pronto, Sreg) 
+	process (jogar, vez, recebe_pronto, resposta_jogada, envia_pronto, opera_pronto, Sreg) 
 	begin
 		case Sreg is
 	 
-			when INICIAL                     => if vez ='1' then Snext <= RECEBE_JOGADA_TERMINAL;
+			when INICIAL                     => if jogar ='1' then Snext <= DECIDE_JOGADOR;
+															else               Snext <= INICIAL;
+															end if;
+															
+			when DECIDE_JOGADOR					=> if vez ='1' then Snext <= RECEBE_JOGADA_TERMINAL;
 															else             Snext <= RECEBE_JOGADA_ADVERSARIO;
 															end if;
 		 
@@ -149,19 +154,20 @@ begin
 						 "11" when others;
 	with Sreg select
 		estado <= "0000" when INICIAL,  							-- 0
-					 "0001" when ESPERA_VEZ, 						-- 1
-					 "0010" when IMPRIME_1, 						-- 2
-					 "0011" when RECEBE_JOGADA_TERMINAL,   	-- 3
-					 "0100" when ENVIA_JOGADA, 					-- 4
-					 "0101" when RECEBE_RESPOSTA,  				-- 5
-					 "0110" when MARCA_JOGADA_TERMINAL, 		-- 6
-				    "0111" when IMPRIME_2,							-- 7
-					 "1000" when PASSA_VEZ, 						-- 8
-					 "1001" when RECEBE_JOGADA_ADVERSARIO, 	-- 9
-					 "1010" when VERIFICA_JOGADA_ADVERSARIO,  -- A
-					 "1011" when MARCA_JOGADA_ADVERSARIO, 		-- B
-					 "1100" when ENVIA_RESPOSTA, 					-- C
-					 "1101" when MENSAGEM_ERRO,					-- D
+					 "0001" when DECIDE_JOGADOR, 					-- 1
+					 "0010" when ESPERA_VEZ, 						-- 2
+					 "0011" when IMPRIME_1,   						-- 3
+					 "0100" when RECEBE_JOGADA_TERMINAL, 		-- 4
+					 "0101" when ENVIA_JOGADA,  					-- 5
+					 "0110" when RECEBE_RESPOSTA, 				-- 6
+				    "0111" when MARCA_JOGADA_TERMINAL,			-- 7
+					 "1000" when IMPRIME_2, 						-- 8
+					 "1001" when PASSA_VEZ, 						-- 9
+					 "1010" when RECEBE_JOGADA_ADVERSARIO,  	-- A
+					 "1011" when VERIFICA_JOGADA_ADVERSARIO, 	-- B
+					 "1100" when MARCA_JOGADA_ADVERSARIO, 		-- C
+					 "1101" when ENVIA_RESPOSTA,					-- D
+					 "1110" when MENSAGEM_ERRO,					-- E
 					 "1111" when others;								-- F
 	
 

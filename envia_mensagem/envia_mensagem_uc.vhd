@@ -14,7 +14,7 @@ end;
 
 architecture arch_envia_mensagem_uc of envia_mensagem_uc is
 
-	type State_type is (INICIAL, ENVIA_M, ENVIA_L, ENVIA_C,
+	type State_type is (INICIAL, DECIDE_FLUXO, ENVIA_M, ENVIA_L, ENVIA_C,
 							  ESPERA_PRONTO_MENSAGEM, ESPERA_PRONTO_LINHA, ESPERA_PRONTO_COLUNA, FIM);
 							  
 	signal Sreg, Snext: State_type;  -- current state and next state
@@ -34,10 +34,13 @@ begin
 	begin
     case Sreg is
 	 
-		when INICIAL => if 	 envia_mensagem='0' then Snext <= INICIAL;
-							 elsif mensagem="000" 	  then Snext <= ENVIA_L;
-							 else 							    Snext <= ENVIA_M;
+		when INICIAL => if envia_mensagem = '1' then Snext <= DECIDE_FLUXO;
+							 else  								Snext <= INICIAL;
 							 end if;
+		
+		when DECIDE_FLUXO => if mensagem = "000" 	  then Snext <= ENVIA_L;
+									else 							    Snext <= ENVIA_M;
+									end if;
 		
 		when ENVIA_M => Snext <= ESPERA_PRONTO_MENSAGEM;
 		
