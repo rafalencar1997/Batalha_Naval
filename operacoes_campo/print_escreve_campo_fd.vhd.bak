@@ -12,8 +12,7 @@ entity print_escreve_campo_fd is
         we, vez: in std_logic;                          -- memoria_jogo_64x7
         conta, zera, carrega: in std_logic;        -- contador_m_load
         endereco: in std_logic_vector(13 downto 0); -- contador_m_load
-        sel: in std_logic_vector(1 downto 0); -- mux3x1_n
-		  dado: in std_logic_vector(6 downto 0);
+        dado, sel: in std_logic_vector(1 downto 0);      -- mux3x1_n
 		  enable_led: in std_logic;
         fim, fim_linha: out std_logic;             -- contador_m_load
         saida_serial, pronto : out std_logic;      -- tx_serial
@@ -88,10 +87,10 @@ begin
     U1: tx_serial port map (clock=>clock, reset=>reset, partida=>partida, paridade=>'0',
                             dados_ascii=>s_mux, saida_serial=>saida_serial, pronto=>pronto);
     U2: memoria_jogo_64x7 port map (linha=>s_contagem(5 downto 3), coluna=>s_contagem(2 downto 0), 
-                            we=>we and (not vez), dado_entrada=>dado, dado_saida=>s_dados);
+                            we=>we and (not vez), dado_entrada=>s_entrada, dado_saida=>s_dados);
 	 
 	 U2_Adv: memoria_jogo_64x7_adv port map (linha=>s_contagem(5 downto 3), coluna=>s_contagem(2 downto 0), 
-                            we=>we and vez, dado_entrada=>dado, dado_saida=>s_dados_adv);
+                            we=>we and vez, dado_entrada=>s_entrada, dado_saida=>s_dados_adv);
 			
     U3: contador_m_load generic map (M => 64, N => 6) port map (CLK=>clock, zera=>zera, conta=>conta, carrega=>carrega,
                                                            D=>s_endereco, q=>s_contagem, fim=>fim); 
@@ -100,8 +99,8 @@ begin
                                                    SEL=>sel, MX_OUT=>s_mux);
 
     -- mux da entrada da memoria
-    --U5: mux3x1_n generic map (BITS => 7) port map (D2 => "1011000", D1=> "1000001", D0=>"1011111", 
-    --                                             SEL=>dado, MX_OUT=>s_entrada);
+    U5: mux3x1_n generic map (BITS => 7) port map (D2 => "1011000", D1=> "1000001", D0=>"1011111", 
+                                                   SEL=>dado, MX_OUT=>s_entrada);
 	 
 	 U6: decodificador_resultado_jogada port map (memoria => s_dados_resultado, jogada_cod => s_resultado_jogada);
 	 
@@ -109,7 +108,6 @@ begin
 													linha=> s_linha, coluna=>s_coluna);
 													
 	 s_endereco <= s_linha(2 downto 0) & s_coluna( 2 downto 0);
-	 --s_entrada <= dado;
 	 
 	  with vez select
 			s_dados_resultado <= s_dados_adv when '1',
