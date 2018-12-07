@@ -9,8 +9,8 @@ use ieee.std_logic_unsigned.alL;
 
 entity contador_m is
 	generic (
-		constant M: integer := 50;  -- mÃ³dulo do contador
-		constant N: integer := 6    -- nÃºmero de bits da saÃ­da
+		constant M: integer := 50;  -- módulo do contador
+		constant N: integer := 6    -- número de bits da saída
 	);
     port (
         CLK, zera, conta: in STD_LOGIC;

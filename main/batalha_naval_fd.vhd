@@ -6,6 +6,7 @@ use IEEE.std_logic_arith.all;
 entity batalha_naval_fd is
     port (clock, reset: 		       in STD_LOGIC;
 			 vez:						       in STD_LOGIC;
+			 fim_jog, fim_adv:			 out STD_LOGIC;
 			 -- Controle Recebe
 			 term_Nadv:                 in  STD_LOGIC;
 			 jog_Nmsg:                  in  STD_LOGIC;
@@ -34,10 +35,12 @@ entity batalha_naval_fd is
 			 opera_pronto: out STD_LOGIC;
 		
 			 -- Dados Operações
-			 saida_serial_terminal: 		out STD_LOGIC
-	
-			 --placar_jogador: 		out STD_LOGIC_VECTOR(6 downto 0);
-			 --placar_adversario: 	out STD_LOGIC_VECTOR(6 downto 0)    
+			 saida_serial_terminal: 		out STD_LOGIC;
+			 
+			 -- Placar 
+			 placar_jogador: 		out STD_LOGIC_VECTOR(3 downto 0);
+			 placar_adversario: 	out STD_LOGIC_VECTOR(3 downto 0)
+			 
     );
 end batalha_naval_fd;
 
@@ -104,6 +107,18 @@ architecture batalha_naval_fd_arc of batalha_naval_fd is
 		jogada_linha, jogada_coluna: in std_logic_vector(6 downto 0);
       linha, coluna: 				  out std_logic_vector (6 downto 0) 
 	);
+	end component;
+	
+	component contador_m is
+	generic (
+		constant M: integer := 50; 
+		constant N: integer := 6    
+	);
+   port (
+		CLK, zera, conta: in STD_LOGIC;
+      Q: out STD_LOGIC_VECTOR (N-1 downto 0);
+      fim: out STD_LOGIC
+   );
 	end component;
 	
 	signal s_entrada_serial: STD_LOGIC; 
@@ -193,5 +208,25 @@ begin
          linha         => jogada_L,
 			coluna        => jogada_C
 	);
+	
+	PLACAR_JOG: contador_m
+	generic map(M => 2, N => 4)
+   port map(
+		CLK   => clock,
+		zera  => reset,
+		conta => '0',
+      Q     => placar_jogador,
+      fim   => fim_jog
+   );
+	
+	PLACAR_ADV: contador_m
+	generic map(M => 2, N => 4)
+   port map(
+		CLK   => clock,
+		zera  => reset,
+		conta => '0',
+      Q     => placar_adversario,
+      fim   => fim_adv
+   );
 	
 end batalha_naval_fd_arc;

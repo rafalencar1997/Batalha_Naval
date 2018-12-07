@@ -12,6 +12,7 @@ entity batalha_naval is
 			 saida_serial_terminal: 	 out STD_LOGIC;
 			 saida_serial_adversario:   out STD_LOGIC;
 			 
+			 -- Displays
 			 jogada_L: 						 out STD_LOGIC_VECTOR(6 downto 0);
 			 jogada_C: 						 out STD_LOGIC_VECTOR(6 downto 0);
 			 resultado_jogada: 			 buffer STD_LOGIC_VECTOR(1 downto 0);
@@ -58,7 +59,7 @@ architecture batalha_naval_arc of batalha_naval is
 	component batalha_naval_fd
 		port (clock, reset: 		       in STD_LOGIC;
 			 vez:						       in STD_LOGIC;
-			 
+			 fim_jog, fim_adv:			 out STD_LOGIC;
 			 -- Controle Recebe
 			 term_Nadv:                 in  STD_LOGIC;
 			 jog_Nmsg:                  in  STD_LOGIC;
@@ -87,11 +88,11 @@ architecture batalha_naval_arc of batalha_naval is
 			 opera_pronto: out STD_LOGIC;
 		
 			 -- Dados Operações
-			 saida_serial_terminal: 		out STD_LOGIC
+			 saida_serial_terminal: 		out STD_LOGIC;
 			 
-			 --jogador_da_vez: 		out STD_LOGIC_VECTOR(6 downto 0);
-			 --placar_jogador: 		out STD_LOGIC_VECTOR(6 downto 0);
-			 --placar_adversario: 	out STD_LOGIC_VECTOR(6 downto 0)    
+			 --Placar
+			 placar_jogador: 		out STD_LOGIC_VECTOR(3 downto 0);
+			 placar_adversario: 	out STD_LOGIC_VECTOR(3 downto 0)    
     );
 	end component;
 	
@@ -123,6 +124,11 @@ architecture batalha_naval_arc of batalha_naval is
 	signal s_result_jogada:	  STD_LOGIC_VECTOR(1 downto 0);
 	
 	signal s_vez: 				  STD_LOGIC;
+	signal s_fim_jog: 		  STD_LOGIC;
+	signal s_fim_adv: 		  STD_LOGIC;
+	
+	signal s_placar_jog:      STD_LOGIC_VECTOR(3 downto 0);
+	signal s_placar_adv:      STD_LOGIC_VECTOR(3 downto 0);     
 	
 begin 
 	
@@ -134,7 +140,7 @@ begin
 		jogar				 => not jogar,
 		vez_inicio		 => vez_inicio,
 		vez				 => s_vez,
-		resposta_jogada => s_result_jogada, 
+		resposta_jogada => s_result_jogada,
 		estado  			 => s_estado,
 		-- Controle Recebe
 		recebe_vez		 => s_recebe_vez,
@@ -159,7 +165,9 @@ begin
 	port map(
 		clock								=> clock,  
 		reset								=> not reset , 
-		vez								=> s_vez, 		 
+		vez								=> s_vez,	
+		fim_jog							=> s_fim_jog,
+		fim_adv							=> s_fim_adv,
 		-- Controle Recebe
 		term_Nadv  						=> s_term_Nadv,                 
 		jog_Nmsg							=> s_jog_Nmsg, 
@@ -185,21 +193,44 @@ begin
 		operacao						=> s_operacao, 
 		opera_pronto				=> s_operacao_pronto, 
 		-- Dados Operações
-		saida_serial_terminal	=> saida_serial_terminal   
+		saida_serial_terminal	=> saida_serial_terminal,
+		-- Placar
+		placar_jogador          => s_placar_jog,
+		placar_adversario       => s_placar_adv
+		
 	);
-
+	
+	-- Jogador da Vez
 	HEX_2: hex7seg
 	port map(
 		x => "000" & s_vez,
 		enable => '1',
 		hex_output => jogador_da_vez
 	);
-
+	
+	-- Estado
 	HEX_0: hex7seg
 	port map(
 		x => s_estado,
 		enable => '1',
 		hex_output => estado
 	);
+	
+	-- Placar Jogador
+	HEX_1: hex7seg
+	port map(
+		x => s_placar_jog,
+		enable => '1',
+		hex_output => open
+	);
+	
+	-- Placar Adversário
+	HEX_X: hex7seg
+	port map(
+		x => s_placar_adv,
+		enable => '1',
+		hex_output => open
+	);
+	
 	
 end batalha_naval_arc;
