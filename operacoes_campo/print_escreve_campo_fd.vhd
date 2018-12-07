@@ -37,6 +37,14 @@ architecture print_escreve_campo_fd of print_escreve_campo_fd is
     );
     end component;
 	 
+	 component registrador_n is
+		generic (
+       constant N: integer := 8 );
+		port (clock, clear, enable: in STD_LOGIC;
+			D: in STD_LOGIC_VECTOR(N-1 downto 0);
+			Q: out STD_LOGIC_VECTOR (N-1 downto 0) );
+		end component;
+	 
 	 component memoria_jogo_64x7_adv port (
         linha, coluna : in  std_logic_vector(2 downto 0);
         we            : in  std_logic;
@@ -104,6 +112,8 @@ begin
     --                                             SEL=>dado, MX_OUT=>s_entrada);
 	 
 	 U6: decodificador_resultado_jogada port map (memoria => s_dados_resultado, jogada_cod => s_resultado_jogada);
+	 
+	 --REG1: generic map(N => 2) port map()
 	 
 	 U7: decodificador_jogada port map(jogada_linha => endereco(13 downto 7), jogada_coluna => endereco(6 downto 0),
 													linha=> s_linha, coluna=>s_coluna);
