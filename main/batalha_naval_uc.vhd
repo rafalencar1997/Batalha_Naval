@@ -14,6 +14,7 @@ entity batalha_naval_uc is
 		recebe_erro:         in STD_LOGIC;
 		recebe_pronto: 		in STD_LOGIC;
 		recebe_enable:       out STD_LOGIC;
+		recebe_reset:        out STD_LOGIC;
 		jog_Nmsg:            out STD_LOGIC;
 		term_Nadv:           out STD_LOGIC;
 		-- Controle Envia
@@ -155,7 +156,10 @@ begin
 		recebe_enable <= '1' when RECEBE_JOGADA_TERMINAL | RECEBE_JOGADA_ADVERSARIO | 
 										  RECEBE_RESPOSTA | ESPERA_VEZ,
 				           '0' when others;
-							  
+	with Sreg select
+		recebe_reset <= '1' when INICIAL | DECIDE_JOGADOR | PASSA_VEZ | IMPRIME_A_1,
+							 '0' when others;
+		
 	with Sreg select
 		mensagem  <= "000" 					  when ENVIA_JOGADA,
 				       "010" 					  when PASSA_VEZ,

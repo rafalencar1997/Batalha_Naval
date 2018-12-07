@@ -7,6 +7,7 @@ entity recebe_mensagem is
 		-- Entradas Controle
 		clock, reset:   in STD_LOGIC; 
 		recebe_enable:  in STD_LOGIC;
+		recebe_reset:   in STD_LOGIC;
 		jog_Nmsg:       in STD_LOGIC;
 		--Entrada Dados     
 		entrada_serial: in STD_LOGIC; 
@@ -100,7 +101,7 @@ begin
 	generic map (N => 7)
    port map(
 		clock  => clock,
-		clear  => reset, 
+		clear  => recebe_reset, 
 		enable => s_enable_L,
 		D      => s_dado_rec,
 		Q      => reg_jogada_L
@@ -111,7 +112,7 @@ begin
 	generic map (N => 7)
    port map(
 		clock  => clock,
-		clear  => reset, 
+		clear  => recebe_reset, 
 		enable => s_enable_C,
 		D      => s_dado_rec,
 		Q      => reg_jogada_C
@@ -122,7 +123,7 @@ begin
 	generic map (N => 7)
    port map(
 		clock  => clock,
-		clear  => reset, 
+		clear  => recebe_reset, 
 		enable => s_enable_M,
 		D      => s_dado_rec,
 		Q      => reg_mensagem

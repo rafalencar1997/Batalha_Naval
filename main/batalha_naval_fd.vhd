@@ -10,6 +10,7 @@ entity batalha_naval_fd is
 			 term_Nadv:                 in  STD_LOGIC;
 			 jog_Nmsg:                  in  STD_LOGIC;
 			 recebe_enable: 				 in  STD_LOGIC;
+			 recebe_reset:					 in  STD_LOGIC;
 			 recebe_erro: 					 out STD_LOGIC;
 			 recebe_pronto:				 out STD_LOGIC;
 			 recebe_vez:				    out STD_LOGIC;
@@ -18,7 +19,7 @@ entity batalha_naval_fd is
 			 entrada_serial_adversario: in STD_LOGIC;
 			 jogada_L: 						 out STD_LOGIC_VECTOR(6 downto 0);
 			 jogada_C: 						 out STD_LOGIC_VECTOR(6 downto 0);
-			 resultado_jogada: 			 out STD_LOGIC_VECTOR(1 downto 0);
+			 resultado_jogada: 			 buffer STD_LOGIC_VECTOR(1 downto 0);
 			 -- Controle Enviar
 			 enviar_enable:   in  STD_LOGIC;
 			 mensagem:        in  STD_LOGIC_VECTOR(2 downto 0);
@@ -34,8 +35,7 @@ entity batalha_naval_fd is
 		
 			 -- Dados Operações
 			 saida_serial_terminal: 		out STD_LOGIC
-			 
-			 --jogador_da_vez: 		out STD_LOGIC_VECTOR(6 downto 0);
+	
 			 --placar_jogador: 		out STD_LOGIC_VECTOR(6 downto 0);
 			 --placar_adversario: 	out STD_LOGIC_VECTOR(6 downto 0)    
     );
@@ -43,21 +43,13 @@ end batalha_naval_fd;
 
 architecture batalha_naval_fd_arc of batalha_naval_fd is
 
-	-- Multiplexador de duas entradas
-	component mux2x1_n
-		port(
-			D1, D0 : in std_logic;
-			SEL:     in std_logic;
-			MX_OUT : out std_logic
-		);
-	end component;
-
 	-- Recebe Jogada
 	component recebe_mensagem 
 		port ( 
 			-- Entradas Controle
 			clock, reset:   in STD_LOGIC; 
 			recebe_enable:  in STD_LOGIC;
+			recebe_reset:   in STD_LOGIC;
 			jog_Nmsg:       in STD_LOGIC;
 			--Entrada Dados     
 			entrada_serial: in STD_LOGIC; 
@@ -86,41 +78,40 @@ architecture batalha_naval_fd_arc of batalha_naval_fd is
 	end component;
 	
 	-- Operações do Campo
-	component print_escreve_campo
+	component opera_campo
 		port (
-         clock, reset, iniciar, vez: in std_logic;
-        operacao: in std_logic_vector(1 downto 0);
-		dado: in std_logic_vector(6 downto 0);
-		endereco: in std_logic_vector(13 downto 0);
-        saida_serial, pronto : out std_logic;
-		  resultado_jogada : out std_logic_vector(1 downto 0);
+        clock, reset: 						 in std_logic; 
+		  vez: 						 			 in std_logic;
+		  opera_enable: 						 in std_logic;
+        operacao: 							 in std_logic_vector(1 downto 0);
+		  dado: 									 in std_logic_vector(6 downto 0);
+        endereco: 							 in std_logic_vector(13 downto 0);
+        saida_serial: 	 					 out std_logic; 
+		  opera_pronto: 	 					 out std_logic;
+		  resultado_jogada: 					 out std_logic_vector(1 downto 0);
         -- depuracao
-        db_reseta, db_partida, db_zera, db_conta, db_carrega, db_pronto, db_we, db_fim: out std_logic;
-        db_q: out std_logic_vector(5 downto 0);
-        db_sel: out std_logic_vector(1 downto 0);
-        db_dados: out std_logic_vector(6 downto 0)
-    );
-	end component;
-	
-	component hex7seg
-	port (
-		x : in std_logic_vector(3 downto 0);
-		enable : in std_logic;
-		hex_output : out std_logic_vector(6 downto 0)
-	);
-	end component;
-	
-	component ascii_to_7seg
-		port ( 
-			jogada_linha, jogada_coluna: in std_logic_vector(6 downto 0);
-         linha, coluna: out std_logic_vector (6 downto 0) 
+        db_reseta, db_partida, db_zera: out std_logic; 
+		  db_conta, db_carrega: 			 out std_logic;
+		  db_pronto, db_we, db_fim: 		 out std_logic;
+        db_q: 									 out std_logic_vector(5 downto 0);
+        db_sel: 								 out std_logic_vector(1 downto 0);
+        db_dados: 							 out std_logic_vector(6 downto 0)
 		);
+	end component;
+		
+	component ascii_to_7seg
+	port ( 
+		jogada_linha, jogada_coluna: in std_logic_vector(6 downto 0);
+      linha, coluna: 				  out std_logic_vector (6 downto 0) 
+	);
 	end component;
 	
 	signal s_entrada_serial: STD_LOGIC; 
 	signal s_jogada_L:       STD_LOGIC_VECTOR(6 downto 0);
 	signal s_jogada_C:       STD_LOGIC_VECTOR(6 downto 0);
-	signal s_mensagem:       STD_LOGIC_VECTOR(6 downto 0);
+	signal s_resultado:   	 STD_LOGIC_VECTOR(6 downto 0);
+	signal s_resultado_jog:  STD_LOGIC_VECTOR(6 downto 0); 
+	signal s_resultado_adv:  STD_LOGIC_VECTOR(6 downto 0);
 	
 begin 
 		
@@ -134,6 +125,7 @@ begin
 		clock          => clock, 
 		reset  			=> reset,
 		recebe_enable	=> recebe_enable,
+		recebe_reset   => recebe_reset,
 		jog_Nmsg			=> jog_Nmsg, 	
 		entrada_serial => s_entrada_serial,  
 		recebe_erro		=> recebe_erro, 
@@ -141,7 +133,7 @@ begin
 		recebe_vez     => recebe_vez,
 		reg_jogada_L	=> s_jogada_L, 
 		reg_jogada_C	=> s_jogada_C, 
-		reg_mensagem	=> s_mensagem,
+		reg_mensagem	=> s_resultado_adv,
 		estado 			=> open
 	);
 
@@ -159,17 +151,17 @@ begin
 	);
 	
 	-- Operações Campo
-	OC: print_escreve_campo
+	OC: opera_campo
 	port map(
 		clock				  => clock, 
 		reset            => reset, 
-		iniciar          => opera_enable,
 		vez				  => vez,
+		opera_enable     => opera_enable,
 		operacao         => operacao,  
-		dado             => s_mensagem,
+		dado             => s_resultado,
 		endereco         => s_jogada_L & s_jogada_C,
 		saida_serial     => saida_serial_terminal, 
-		pronto           => opera_pronto,
+		opera_pronto     => opera_pronto,
 		resultado_jogada => resultado_jogada,
 		-- depuracao
 		db_reseta        	=> open, 
@@ -184,6 +176,15 @@ begin
 		db_sel				=> open,
 		db_dados				=> open
 	);
+	
+	with vez select
+	s_resultado <= s_resultado_adv  when '1', 
+						s_resultado_jog when others;
+						
+	with resultado_jogada select
+	s_resultado_jog <= "1011000" when "10", -- X
+							 "1000001" when "01", -- A
+							 "0000000" when others;
 	
 	ASC_7SEG: ascii_to_7seg
 	port map ( 

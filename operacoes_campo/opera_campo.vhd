@@ -1,0 +1,135 @@
+-- print_escreve_campo.vhd
+--
+-- constantes para operacao
+--  IMPRIME := "00"
+--  ESCREVE := "01"
+--
+-- LabDig 2018
+--
+library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.std_logic_arith.all;
+
+
+entity opera_campo is
+	port (
+		clock, reset: 						  in std_logic; 
+		vez: 						 			  in std_logic;
+		opera_enable: 						  in std_logic;
+      operacao: 							  in std_logic_vector(1 downto 0);
+		dado: 								  in std_logic_vector(6 downto 0);
+      endereco: 							  in std_logic_vector(13 downto 0);
+      saida_serial: 	 					  out std_logic; 
+		opera_pronto: 	 					  out std_logic;
+		resultado_jogada: 				  out std_logic_vector(1 downto 0);
+      -- depuracao
+      db_reseta, db_partida, db_zera: out std_logic; 
+		db_conta, db_carrega: 			  out std_logic;
+		db_pronto, db_we, db_fim: 		  out std_logic;
+      db_q: 								  out std_logic_vector(5 downto 0);
+      db_sel: 								  out std_logic_vector(1 downto 0);
+      db_dados: 							  out std_logic_vector(6 downto 0)
+	);
+end opera_campo;
+
+architecture arch_opera_campo of opera_campo is
+
+    signal s_iniciar, s_reseta, s_partida, s_zera, s_conta, s_carrega, s_pronto, s_we, s_fim, s_fim_linha: std_logic;
+    signal s_sel: std_logic_vector(1 downto 0);
+	 signal s_enable_led: std_logic;
+    -- depuracao
+    signal s_q: std_logic_vector(5 downto 0);
+	    
+	component opera_campo_uc 
+	port ( 
+		clock, reset: 				in std_logic; 
+		opera_enable: 				in std_logic;
+      operacao: 					in std_logic_vector(1 downto 0);
+      pronto, fim, fim_linha: in std_logic;
+      zera, reseta, conta: 	out std_logic;
+		carrega, we: 				out std_logic; 
+		partida, opera_pronto: 	out std_logic;
+      sel: 							out std_logic_vector(1 downto 0);
+		enable_led: 				out std_logic
+	);
+   end component;
+
+	component opera_campo_fd 
+	port (
+        clock, reset: in std_logic;
+		  enable_led: in std_logic;
+        partida : in std_logic;
+		  vez :in std_logic;
+        we: in std_logic;
+        conta, zera, carrega: in std_logic;
+        endereco: in std_logic_vector(13 downto 0);
+        sel: in std_logic_vector(1 downto 0);
+		  dado: in std_logic_vector( 6 downto 0);
+        fim, fim_linha: out std_logic;
+        saida_serial, pronto : out std_logic;
+		  resultado_jogada: out std_logic_vector(1 downto 0);
+        db_q: out std_logic_vector(5 downto 0);
+        db_dados: out std_logic_vector(6 downto 0)
+	);
+   end component;
+    
+begin
+
+    -- sinais reset e partida mapeados em botoes ativos em alto
+    UC: opera_campo_uc 
+	 port map (
+		clock				=> clock, 
+		reset				=> reset, 
+		opera_enable	=> opera_enable, 
+		operacao			=> operacao, 
+		pronto			=> s_pronto, 
+      fim				=> s_fim, 
+		fim_linha		=> s_fim_linha, 
+		zera				=> s_zera, 
+		reseta			=> s_reseta, 
+		conta				=> s_conta,
+      carrega			=> s_carrega, 
+		we					=> s_we, 
+		partida			=> s_partida, 
+		opera_pronto   => opera_pronto, 
+		sel				=> s_sel, 
+		enable_led	   => s_enable_led
+	);
+    
+	FD: opera_campo_fd 
+	port map (
+		clock					=> clock, 
+		reset					=> s_reseta, 
+		partida				=> s_partida ,
+		vez 					=> vez, 
+		we						=> s_we, 
+		enable_led			=> s_enable_led,
+      conta					=> s_conta, 
+		zera					=> s_zera, 
+		carrega				=> s_carrega, 
+		endereco				=> endereco, 
+		dado					=> dado, 
+		sel					=> s_sel, 
+      fim					=>s_fim, 
+		fim_linha			=>s_fim_linha, 
+      saida_serial		=>saida_serial, 
+		pronto				=>s_pronto, 
+		resultado_jogada	=>resultado_jogada,
+      db_q					=>s_q, 
+		db_dados				=>db_dados
+	);
+    
+-- depuracao
+db_reseta<= s_reseta;
+db_partida<=s_partida;
+db_zera<=s_zera;
+db_conta<=s_conta;
+db_carrega<=s_carrega;
+db_pronto<=s_pronto;
+db_we<=s_we;
+db_fim<=s_fim;
+db_q<=s_q;
+db_sel <= s_sel;
+
+end arch_opera_campo;
+

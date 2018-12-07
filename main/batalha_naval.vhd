@@ -11,9 +11,10 @@ entity batalha_naval is
 			 entrada_serial_adversario: in  STD_LOGIC;
 			 saida_serial_terminal: 	 out STD_LOGIC;
 			 saida_serial_adversario:   out STD_LOGIC;
+			 
 			 jogada_L: 						 out STD_LOGIC_VECTOR(6 downto 0);
 			 jogada_C: 						 out STD_LOGIC_VECTOR(6 downto 0);
-			 resultado_jogada: 			 out STD_LOGIC_VECTOR(1 downto 0);
+			 resultado_jogada: 			 buffer STD_LOGIC_VECTOR(1 downto 0);
 			 jogador_da_vez: 				 out STD_LOGIC_VECTOR(6 downto 0);
 			 --placar_jogador: 				 out STD_LOGIC_VECTOR(6 downto 0);
 			 --placar_adversario: 			 out STD_LOGIC_VECTOR(6 downto 0)
@@ -39,6 +40,7 @@ architecture batalha_naval_arc of batalha_naval is
 			recebe_erro:         in STD_LOGIC;
 			recebe_pronto: 		in STD_LOGIC;
 			recebe_enable:       out STD_LOGIC;
+			recebe_reset:        out STD_LOGIC;
 			jog_Nmsg:            out STD_LOGIC;
 			term_Nadv:           out STD_LOGIC;
 			-- Controle Envia
@@ -61,6 +63,7 @@ architecture batalha_naval_arc of batalha_naval is
 			 term_Nadv:                 in  STD_LOGIC;
 			 jog_Nmsg:                  in  STD_LOGIC;
 			 recebe_enable: 				 in  STD_LOGIC;
+			 recebe_reset:					 in  STD_LOGIC;
 			 recebe_erro: 					 out STD_LOGIC;
 			 recebe_pronto:				 out STD_LOGIC;
 			 recebe_vez:				    out STD_LOGIC;
@@ -107,7 +110,8 @@ architecture batalha_naval_arc of batalha_naval is
 	signal s_recebe_enable:   STD_LOGIC; 
 	signal s_operacao_enable: STD_LOGIC; 
 	signal s_envia_enable:    STD_LOGIC; 
-	
+
+	signal s_recebe_reset:    STD_LOGIC; 
 	signal s_recebe_vez:      STD_LOGIC;
 	signal s_jog_Nmsg: 		  STD_LOGIC; 
 	signal s_term_Nadv:  	  STD_LOGIC; 
@@ -137,6 +141,7 @@ begin
 		recebe_erro		 => s_recebe_erro,
 		recebe_pronto	 => s_recebe_pronto, 
 		recebe_enable	 => s_recebe_enable,
+		recebe_reset	 => s_recebe_reset,
 		jog_Nmsg			 => s_jog_Nmsg,
 		term_Nadv		 => s_term_Nadv,
 		-- Controle Envia
@@ -158,7 +163,8 @@ begin
 		-- Controle Recebe
 		term_Nadv  						=> s_term_Nadv,                 
 		jog_Nmsg							=> s_jog_Nmsg, 
-		recebe_enable					=> s_recebe_enable, 
+		recebe_enable					=> s_recebe_enable,
+		recebe_reset					=> s_recebe_reset,
 		recebe_erro						=> s_recebe_erro, 
 		recebe_pronto					=> s_recebe_pronto, 
 		recebe_vez                 => s_recebe_vez,
@@ -180,10 +186,16 @@ begin
 		opera_pronto				=> s_operacao_pronto, 
 		-- Dados Operações
 		saida_serial_terminal	=> saida_serial_terminal   
-	); 
+	);
 
-	
-	HEX: hex7seg
+	HEX_2: hex7seg
+	port map(
+		x => "000" & s_vez,
+		enable => '1',
+		hex_output => jogador_da_vez
+	);
+
+	HEX_0: hex7seg
 	port map(
 		x => s_estado,
 		enable => '1',
