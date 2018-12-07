@@ -32,6 +32,14 @@ architecture arch_opera_campo_fd of opera_campo_fd is
     );
     end component;
 	 
+	 component registrador_n is
+		generic (
+       constant N: integer := 8 );
+		port (clock, clear, enable: in STD_LOGIC;
+        D: in STD_LOGIC_VECTOR(N-1 downto 0);
+        Q: out STD_LOGIC_VECTOR (N-1 downto 0) );
+		end component;
+	 
 	 component memoria_jogo_64x7_adv port (
         linha, coluna : in  std_logic_vector(2 downto 0);
         we            : in  std_logic;
@@ -136,6 +144,8 @@ begin
 		linha				=> s_linha, 
 		coluna			=> s_coluna
 	);
+	
+	REG1: registrador_n generic map(N=>2) port map(clock=> clock, clear=>reset, enable=>enable_led, D=>s_resultado_jogada_verificado, Q=>resultado_jogada);
 													
 	s_endereco <= s_linha(2 downto 0) & s_coluna( 2 downto 0);
 	
@@ -157,9 +167,9 @@ begin
    fim_linha <= '1' when "111", 
 					 '0' when others;
 	
-	with enable_led select
-	resultado_jogada <= s_resultado_jogada_verificado when '1', 
-							  "00" 								  when others;
+	--with enable_led select
+	--resultado_jogada <= s_resultado_jogada_verificado when '1', 
+	--						  "00" 								  when others;
 	 
 	with s_endereco_invalido select
 	s_resultado_jogada_verificado <= "11" 					 when '1', 
