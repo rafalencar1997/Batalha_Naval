@@ -6,10 +6,12 @@ entity batalha_naval_uc is
 		clock, reset: 			in STD_LOGIC;
 		jogar:					in STD_LOGIC;
 		vez_inicio: 			in STD_LOGIC;
+		fim_jog, fim_adv:		in STD_LOGIC;
 		placar_adv_enable: 	out STD_LOGIC;
 		placar_jog_enable: 	out STD_LOGIC;
 		vez: 						out STD_LOGIC;
 		resposta_jogada:     in STD_LOGIC_VECTOR(1 downto 0);
+		gan_per:					out STD_LOGIC_VECTOR(1 downto 0);
 		estado: 					out STD_LOGIC_VECTOR(3 downto 0);
 		-- Controle Recebe
 		recebe_vez: 			in STD_LOGIC;
@@ -44,7 +46,7 @@ architecture batalha_naval_uc_arc of batalha_naval_uc is
 		MARCA_JOGADA_ADVERSARIO,    MARCA_JOGADA_TERMINAL, 
 		RECEBE_JOGADA_ADVERSARIO,   RECEBE_JOGADA_TERMINAL,
 		VERIFICA_JOGADA_ADVERSARIO, VERIFICA_JOGADA_TERMINAL, 
-		MENSAGEM_ERRO
+		VERIFICA_FIM_ADV, VERIFICA_FIM_JOG, GANHOU, PERDEU, MENSAGEM_ERRO
 	);
 	 
    signal Sreg, Snext: State_type;  -- current state and next state
@@ -62,7 +64,9 @@ begin
 	end process;
 
 	-- next-state logic
-	process (jogar, vez_inicio, recebe_vez, recebe_pronto, resposta_jogada, envia_pronto, opera_pronto, Sreg) 
+	process (jogar, vez_inicio, recebe_vez, recebe_pronto, 
+				resposta_jogada, envia_pronto, opera_pronto, 
+				fim_adv, fim_jog, Sreg) 
 	begin
 		case Sreg is
 	 
@@ -102,8 +106,11 @@ begin
 															else 						    Snext <= MARCA_JOGADA_TERMINAL;
 															end if;
 			-- MARCAR PONTO NO PLACAR JOG												
-			when PLACAR_JOG								=> Snext <= IMPRIME_A_2;
+			when PLACAR_JOG						=> Snext <= VERIFICA_FIM_JOG;
 			
+			when VERIFICA_FIM_JOG				=> if fim_jog = '1' then Snext <= GANHOU;
+															else 					  Snext <= IMPRIME_A_2;
+															end if;
 																														
 			when IMPRIME_A_2						=>	if opera_pronto = '1' then Snext <= PASSA_VEZ;
 															else             		 		   Snext <= IMPRIME_A_2;
@@ -124,7 +131,6 @@ begin
 			-- MARCAR PONTO NO PLACAR ADV												
 			when PLACAR_ADV						=> Snext <= MARCA_JOGADA_ADVERSARIO;
 			
-			
 			when MARCA_JOGADA_ADVERSARIO     => if opera_pronto='1' then Snext <= ENVIA_RESPOSTA;
 															else 						    Snext <= MARCA_JOGADA_ADVERSARIO;
 															end if;
@@ -133,13 +139,22 @@ begin
 															else            			  Snext <= ENVIA_RESPOSTA;
 															end if;
 															
-			when IMPRIME_J							=>	if opera_pronto = '1' then Snext <= ESPERA_VEZ;
+			when IMPRIME_J							=>	if opera_pronto = '1' then Snext <= VERIFICA_FIM_ADV;
 															else             		 		Snext <= IMPRIME_J;
 															end if;
+															
+			when VERIFICA_FIM_ADV				=> if fim_adv = '1' then Snext <= PERDEU;
+															else 					    Snext <= ESPERA_VEZ;
+															end if;												
 			
 			when ESPERA_VEZ 				 		=> if recebe_vez ='1' then Snext <= IMPRIME_A_1;
 															else             			Snext <= ESPERA_VEZ;
 															end if;
+			
+			when GANHOU								=> Snext <= GANHOU;
+				
+			when PERDEU								=> Snext <= PERDEU; 
+			
 			
 			when MENSAGEM_ERRO 					=> Snext <= RECEBE_JOGADA_ADVERSARIO;
 			
@@ -200,24 +215,21 @@ begin
 	with Sreg select
 		placar_jog_enable <= '1' when PLACAR_JOG,
 									'0' when others;
-						
+		
+	with Sreg select
+		gan_per <= "10" when GANHOU,
+					  "01" when PERDEU,
+					  "00" when others;
+					  
 	with Sreg select
 		estado <= "0000" when INICIAL,  							-- 0
-					 "0001" when IMPRIME_A_1 | IMPRIME_A_2 |  -- 1
-									 PLACAR_ADV  | PLACAR_JOG  | IMPRIME_J, 					
-					 "0010" when DECIDE_JOGADOR, 					-- 2
-					 "0011" when ESPERA_VEZ,   					-- 3
-					 "0100" when RECEBE_JOGADA_TERMINAL, 		-- 4
-					 "0101" when VERIFICA_JOGADA_TERMINAL,  	-- 5
-					 "0110" when ENVIA_JOGADA, 					-- 6
-				    "0111" when RECEBE_RESPOSTA,					-- 7
-					 "1000" when MARCA_JOGADA_TERMINAL, 		-- 8
-					 "1001" when PASSA_VEZ, 						-- 9
-					 "1010" when RECEBE_JOGADA_ADVERSARIO,  	-- A
-					 "1011" when VERIFICA_JOGADA_ADVERSARIO, 	-- B
-					 "1100" when MARCA_JOGADA_ADVERSARIO, 		-- C
-					 "1101" when ENVIA_RESPOSTA,					-- D
+					 "0001" when RECEBE_JOGADA_TERMINAL, 		-- 1
+				    "0010" when RECEBE_RESPOSTA,					-- 2
+					 "0011" when RECEBE_JOGADA_ADVERSARIO,  	-- 3
+					 "0100" when ESPERA_VEZ,  						-- 4
 					 "1110" when MENSAGEM_ERRO,					-- E
+					 "0110" when GANHOU,								-- 6
+					 "1101" when PERDEU,								-- D
 					 "1111" when others;								-- F
 	
 

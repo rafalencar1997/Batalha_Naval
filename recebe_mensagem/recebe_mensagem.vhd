@@ -154,7 +154,7 @@ begin
 			hex_output => estado
 	);
 	
-	recebe_vez <= '1' when (reg_mensagem = "1010110" and recebe_pronto = '1');
+	recebe_vez <= '1' when (reg_mensagem = "1010110" and recebe_pronto = '1') else '0';
 
   
 end recebe_mensagem_arch;

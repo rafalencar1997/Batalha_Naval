@@ -33,10 +33,12 @@ architecture batalha_naval_arc of batalha_naval is
 			clock, reset: 			in STD_LOGIC;
 			jogar:					in STD_LOGIC;
 			vez_inicio: 			in STD_LOGIC;
+			fim_jog, fim_adv:		in STD_LOGIC;
 			placar_adv_enable: 	out STD_LOGIC;
 			placar_jog_enable: 	out STD_LOGIC;
 		   vez: 						out STD_LOGIC;	
 			resposta_jogada:     in STD_LOGIC_VECTOR(1 downto 0);
+			gan_per:					out STD_LOGIC_VECTOR(1 downto 0);
 			estado: 					out STD_LOGIC_VECTOR(3 downto 0);
 			-- Controle Recebe
 			recebe_vez: 			in STD_LOGIC;
@@ -146,10 +148,13 @@ begin
 		reset				 	=> not reset,
 		jogar				 	=> not jogar,
 		vez_inicio		 	=> vez_inicio,
-		vez					=> s_vez,
+		fim_jog				=>	s_fim_jog,
+		fim_adv 				=>	s_fim_adv,
 		placar_adv_enable => s_placar_adv_enable,
 		placar_jog_enable => s_placar_jog_enable,
+		vez					=> s_vez,
 		resposta_jogada 	=> s_result_jogada,
+		gan_per				=> open,
 		estado  			 	=> s_estado,
 		-- Controle Recebe
 		recebe_vez		 => s_recebe_vez,
