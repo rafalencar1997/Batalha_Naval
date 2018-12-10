@@ -25,64 +25,90 @@ end opera_campo_fd;
 
 architecture arch_opera_campo_fd of opera_campo_fd is
 
-    component tx_serial port (
-        clock, reset, partida, paridade: in std_logic;
-        dados_ascii: in std_logic_vector (6 downto 0);
-        saida_serial, pronto : out std_logic
-    );
-    end component;
+	-- TX Serial
+	component tx_serial 
+	port (
+		clock, reset, partida, paridade: in std_logic;
+      dados_ascii: 						  in std_logic_vector(6 downto 0);
+      saida_serial, pronto: 			  out std_logic
+	);
+	end component;
 	 
-	 component registrador_n is
-		generic (
-       constant N: integer := 8 );
-		port (clock, clear, enable: in STD_LOGIC;
-        D: in STD_LOGIC_VECTOR(N-1 downto 0);
-        Q: out STD_LOGIC_VECTOR (N-1 downto 0) );
-		end component;
+	component registrador_n is
+	generic (
+      constant N: integer := 8 
+	);
+	port (
+		clock, clear, enable: in STD_LOGIC;
+      D: 						 in STD_LOGIC_VECTOR(N-1 downto 0);
+      Q: 						 out STD_LOGIC_VECTOR (N-1 downto 0) 
+	);
+	end component;
 	 
-	 component memoria_jogo_64x7_adv port (
-        linha, coluna : in  std_logic_vector(2 downto 0);
-        we            : in  std_logic;
-        dado_entrada  : in  std_logic_vector(6 downto 0);
-        dado_saida    : out std_logic_vector(6 downto 0));
-    end component;
+	-- Campo do Adversário
+	component memoria_jogo_64x7_adv 
+	port (
+      linha, coluna : in  std_logic_vector(2 downto 0);
+      we            : in  std_logic;
+      dado_entrada  : in  std_logic_vector(6 downto 0);
+		dado_saida    : out std_logic_vector(6 downto 0)
+	);
+   end component;
     
-    component memoria_jogo_64x7 port (
-        linha, coluna : in  std_logic_vector(2 downto 0);
-        we            : in  std_logic;
-        dado_entrada  : in  std_logic_vector(6 downto 0);
-        dado_saida    : out std_logic_vector(6 downto 0));
-    end component;
+	-- Campo do Jogador
+   component memoria_jogo_64x7
+	port (
+      linha, coluna : in  std_logic_vector(2 downto 0);
+      we            : in  std_logic;
+      dado_entrada  : in  std_logic_vector(6 downto 0);
+		dado_saida    : out std_logic_vector(6 downto 0)
+	);
+	end component;
 
-    component contador_m_load
-    generic (
-        constant M: integer;  -- modulo do contador
-        constant N: integer   -- numero de bits da saida
-    );
-    port (
-        CLK, zera, conta, carrega: in STD_LOGIC;
-        D: in STD_LOGIC_VECTOR (N-1 downto 0);
-        Q: out STD_LOGIC_VECTOR (N-1 downto 0);
-        fim: out STD_LOGIC );
-    end component;
+   component contador_m_load
+   generic (
+		constant M: integer;  -- modulo do contador
+      constant N: integer   -- numero de bits da saida
+   );
+   port (
+		CLK, zera, conta, carrega: in STD_LOGIC;
+      D: in STD_LOGIC_VECTOR (N-1 downto 0);
+      Q: out STD_LOGIC_VECTOR (N-1 downto 0);
+      fim: out STD_LOGIC 
+	);
+   end component;
     
-	 component decodificador_resultado_jogada port(
-	 memoria: in std_logic_vector(6 downto 0);
-    jogada_cod: out std_logic_vector (1 downto 0)
-	 );
-	 end component;
+	component decodificador_resultado_jogada 
+	port(
+		memoria:    in std_logic_vector(6 downto 0);
+		jogada_cod: out std_logic_vector (1 downto 0)
+	);
+	end component;
 	 
-	 component decodificador_jogada port (
-	 jogada_linha, jogada_coluna: in std_logic_vector(6 downto 0);
-    linha, coluna: out std_logic_vector (3 downto 0));
-	 end component;
+	component decodificador_jogada 
+	port (
+		jogada_linha, jogada_coluna: in std_logic_vector(6 downto 0);
+		linha, coluna: 				  out std_logic_vector (3 downto 0)
+	);
+	end component;
 	 
-	 signal s_contagem, s_endereco: 									  std_logic_vector(5 downto 0);
-    signal s_dados, s_mux, s_entrada: 								  std_logic_vector(6 downto 0); 
-	 signal s_dados_adv,s_imprime_memoria, s_dados_resultado:  std_logic_vector(6 downto 0);
-	 signal s_resultado_jogada, s_resultado_jogada_verificado: std_logic_vector(1 downto 0);
-	 signal s_linha, s_coluna: 										  std_logic_vector(3 downto 0);
-	 signal s_endereco_invalido: 										  std_logic;
+	component mux3x1_n
+	generic (
+		constant BITS: integer := 4
+	);
+	port(
+		D2, D1, D0 : in std_logic_vector (BITS-1 downto 0);
+      SEL: in std_logic_vector (1 downto 0);
+      MX_OUT : out std_logic_vector (BITS-1 downto 0)	
+	);
+	end component;
+	 
+	signal s_contagem, s_endereco: 									  std_logic_vector(5 downto 0);
+   signal s_dados, s_mux, s_entrada: 								  std_logic_vector(6 downto 0); 
+	signal s_dados_adv,s_imprime_memoria, s_dados_resultado:  std_logic_vector(6 downto 0);
+	signal s_resultado_jogada, s_resultado_jogada_verificado: std_logic_vector(1 downto 0);
+	signal s_linha, s_coluna: 										  std_logic_vector(3 downto 0);
+	signal s_endereco_invalido: 										  std_logic;
 
 begin
 
@@ -103,7 +129,7 @@ begin
 	port map (
 		linha				=> s_contagem(5 downto 3), 
 		coluna			=> s_contagem(2 downto 0), 
-      we					=> we and (not vez), 
+      we					=> we or vez, 
 		dado_entrada	=> dado, 
 		dado_saida		=> s_dados
 	);
@@ -113,7 +139,7 @@ begin
 	port map (
 		linha				=> s_contagem(5 downto 3), 
 		coluna			=> s_contagem(2 downto 0), 
-      we					=> we and vez, 
+      we					=> we or (not vez), 
 		dado_entrada	=> dado, 
 		dado_saida		=> s_dados_adv
 	);
@@ -145,16 +171,28 @@ begin
 		coluna			=> s_coluna
 	);
 	
-	REG1: registrador_n generic map(N=>2) port map(clock=> clock, clear=>reset, enable=>enable_led, D=>s_resultado_jogada_verificado, Q=>resultado_jogada);
+	REG1: registrador_n generic map(N=>2) 
+	port map(
+		clock=> clock, 
+		clear=>'0', 
+		enable=>enable_led, 
+		D=>s_resultado_jogada_verificado, 
+		Q=>resultado_jogada
+	);
 													
 	s_endereco <= s_linha(2 downto 0) & s_coluna( 2 downto 0);
 	
-	with sel select
-	s_mux <= s_imprime_memoria when "00",
-				"0001010"         when "01",
-				"0001101"         when "10",
-				"0000000"			when others;
-	 
+	MUX_IMPRIME:mux3x1_n
+	generic map(BITS=> 7)
+	port map(
+		D2     => "0001101", 
+		D1     => "0001010", 
+		D0     => s_imprime_memoria,
+      SEL    => sel,
+      MX_OUT => s_mux	
+	);
+
+	
 	with vez select
 	s_dados_resultado <= s_dados_adv when '1',
 								s_dados 	   when others;
@@ -166,10 +204,6 @@ begin
 	with s_contagem(2 downto 0) select
    fim_linha <= '1' when "111", 
 					 '0' when others;
-	
-	--with enable_led select
-	--resultado_jogada <= s_resultado_jogada_verificado when '1', 
-	--						  "00" 								  when others;
 	 
 	with s_endereco_invalido select
 	s_resultado_jogada_verificado <= "11" 					 when '1', 

@@ -17,8 +17,8 @@ begin
 	
     with memoria select
         jogada_cod <= "01" when "1011111", --Resultado Agua quando memoria esta livre
-							 "10" when "0100100", -- Acerto quando memoria possui embarcaçao
-							 "11" when others;    -- erro
+                 "10" when "0100100", -- Acerto quando memoria possui embarcaçao
+                 "11" when others;    -- erro
 end decodificador_resultado_jogada_arch;
 
 

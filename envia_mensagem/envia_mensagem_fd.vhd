@@ -36,13 +36,11 @@ architecture arch of envia_mensagem_fd is
 					   "0000000"  when others;
 	
 	with mensagem select
-	s_mensagem <= "1000101"   when "111", 		-- E
-					  "1011000"   when "110",		-- X
-					  "1000001"   when "101",		-- A
-					  "1010110"   when "010",		-- V
-					  "1000101"   when "001",     -- E
-					  s_caractere when "000",
-					  "0000000"   when others;
+	s_mensagem <= "1011000"   when "110",	-- X
+					  "1000001"   when "101",	-- A
+					  "1010110"   when "010",	-- V
+					  s_caractere when "000",	-- Jogada 
+					  "1000101"   when others; -- E
 	
 	TX: tx_serial
 	port map(

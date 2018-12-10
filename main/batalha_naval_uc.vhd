@@ -164,7 +164,7 @@ begin
 		mensagem  <= "000" 					  when ENVIA_JOGADA,
 				       "010" 					  when PASSA_VEZ,
 						 '1' & resposta_jogada when ENVIA_RESPOSTA,
-						 "110" when others;
+						 "111" when others;
 						 
 	with Sreg select
 		enviar_enable  <= '1' when ENVIA_JOGADA | ENVIA_RESPOSTA | PASSA_VEZ,

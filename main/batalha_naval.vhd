@@ -17,8 +17,8 @@ entity batalha_naval is
 			 jogada_C: 						 out STD_LOGIC_VECTOR(6 downto 0);
 			 resultado_jogada: 			 buffer STD_LOGIC_VECTOR(1 downto 0);
 			 jogador_da_vez: 				 out STD_LOGIC_VECTOR(6 downto 0);
-			 --placar_jogador: 				 out STD_LOGIC_VECTOR(6 downto 0);
-			 --placar_adversario: 			 out STD_LOGIC_VECTOR(6 downto 0)
+			 placar_jogador: 				 out STD_LOGIC_VECTOR(6 downto 0);
+			 placar_adversario: 			 out STD_LOGIC_VECTOR(6 downto 0);
 			 
 			 -- Depuração
 			 estado: 						 out STD_LOGIC_VECTOR(6 downto 0)
@@ -221,7 +221,7 @@ begin
 	port map(
 		x => s_placar_jog,
 		enable => '1',
-		hex_output => open
+		hex_output => placar_jogador
 	);
 	
 	-- Placar Adversário
@@ -229,8 +229,9 @@ begin
 	port map(
 		x => s_placar_adv,
 		enable => '1',
-		hex_output => open
+		hex_output => placar_adversario
 	);
 	
+	resultado_jogada <= s_result_jogada;
 	
 end batalha_naval_arc;
