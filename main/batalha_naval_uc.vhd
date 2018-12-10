@@ -6,6 +6,8 @@ entity batalha_naval_uc is
 		clock, reset: 			in STD_LOGIC;
 		jogar:					in STD_LOGIC;
 		vez_inicio: 			in STD_LOGIC;
+		placar_adv_enable: 	out STD_LOGIC;
+		placar_jog_enable: 	out STD_LOGIC;
 		vez: 						out STD_LOGIC;
 		resposta_jogada:     in STD_LOGIC_VECTOR(1 downto 0);
 		estado: 					out STD_LOGIC_VECTOR(3 downto 0);
@@ -38,7 +40,7 @@ architecture batalha_naval_uc_arc of batalha_naval_uc is
 		INICIAL, DECIDE_JOGADOR, 
 		ESPERA_VEZ, PASSA_VEZ,
 		ENVIA_JOGADA, ENVIA_RESPOSTA, RECEBE_RESPOSTA, 
-		IMPRIME_A_1,  IMPRIME_A_2, IMPRIME_J, DELAY_1, DELAY_2,
+		IMPRIME_A_1,  IMPRIME_A_2, IMPRIME_J, PLACAR_ADV, PLACAR_JOG,
 		MARCA_JOGADA_ADVERSARIO,    MARCA_JOGADA_TERMINAL, 
 		RECEBE_JOGADA_ADVERSARIO,   RECEBE_JOGADA_TERMINAL,
 		VERIFICA_JOGADA_ADVERSARIO, VERIFICA_JOGADA_TERMINAL, 
@@ -89,16 +91,18 @@ begin
 			when ENVIA_JOGADA 					=> if envia_pronto ='1' then Snext <= RECEBE_RESPOSTA;
 															else            			  Snext <= ENVIA_JOGADA;
 															end if;
-											 
+					
+				
 			when RECEBE_RESPOSTA 				=> if recebe_pronto ='1' then Snext <= MARCA_JOGADA_TERMINAL;
 															else            				Snext <= RECEBE_RESPOSTA;
 															end if; 
-											 
-			when MARCA_JOGADA_TERMINAL 		=> if opera_pronto='1' then Snext <= DELAY_1;
+			
+			
+			when MARCA_JOGADA_TERMINAL 		=> if opera_pronto='1' then Snext <= PLACAR_JOG;
 															else 						    Snext <= MARCA_JOGADA_TERMINAL;
 															end if;
-															
-			when DELAY_1								=> Snext <= IMPRIME_A_2;
+			-- MARCAR PONTO NO PLACAR JOG												
+			when PLACAR_JOG								=> Snext <= IMPRIME_A_2;
 			
 																														
 			when IMPRIME_A_2						=>	if opera_pronto = '1' then Snext <= PASSA_VEZ;
@@ -114,16 +118,17 @@ begin
 															end if;
 			
 			when VERIFICA_JOGADA_ADVERSARIO 	=> if resposta_jogada ="11" then Snext <= MENSAGEM_ERRO;
-															elsif	opera_pronto='1'   then Snext <= DELAY_2;
+															elsif	opera_pronto='1'   then Snext <= PLACAR_ADV;
 															else 							      Snext <= VERIFICA_JOGADA_ADVERSARIO;
 															end if;
-															
-			when DELAY_2								=> Snext <= MARCA_JOGADA_ADVERSARIO;
-															
+			-- MARCAR PONTO NO PLACAR ADV												
+			when PLACAR_ADV						=> Snext <= MARCA_JOGADA_ADVERSARIO;
+			
+			
 			when MARCA_JOGADA_ADVERSARIO     => if opera_pronto='1' then Snext <= ENVIA_RESPOSTA;
 															else 						    Snext <= MARCA_JOGADA_ADVERSARIO;
 															end if;
-											 
+										 
 			when ENVIA_RESPOSTA 					=> if envia_pronto ='1' then Snext <= IMPRIME_J;
 															else            			  Snext <= ENVIA_RESPOSTA;
 															end if;
@@ -189,9 +194,17 @@ begin
 				  '1'  		 when others;
 				  
 	with Sreg select
+		placar_adv_enable <= '1' when PLACAR_ADV,
+									'0' when others;
+	
+	with Sreg select
+		placar_jog_enable <= '1' when PLACAR_JOG,
+									'0' when others;
+						
+	with Sreg select
 		estado <= "0000" when INICIAL,  							-- 0
 					 "0001" when IMPRIME_A_1 | IMPRIME_A_2 |  -- 1
-									 DELAY_1 | DELAY_2 | IMPRIME_J, 					
+									 PLACAR_ADV  | PLACAR_JOG  | IMPRIME_J, 					
 					 "0010" when DECIDE_JOGADOR, 					-- 2
 					 "0011" when ESPERA_VEZ,   					-- 3
 					 "0100" when RECEBE_JOGADA_TERMINAL, 		-- 4

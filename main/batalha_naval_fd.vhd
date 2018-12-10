@@ -37,7 +37,9 @@ entity batalha_naval_fd is
 			 -- Dados Operações
 			 saida_serial_terminal: 		out STD_LOGIC;
 			 
-			 -- Placar 
+			 -- Placar
+			 placar_adv_enable:  in STD_LOGIC;
+			 placar_jog_enable:	in STD_LOGIC;
 			 placar_jogador: 		out STD_LOGIC_VECTOR(3 downto 0);
 			 placar_adversario: 	out STD_LOGIC_VECTOR(3 downto 0)
 			 
@@ -129,12 +131,20 @@ architecture batalha_naval_fd_arc of batalha_naval_fd is
        MX_OUT : out std_logic_vector (BITS-1 downto 0));
 	end component;
 	
-	signal s_entrada_serial: STD_LOGIC; 
-	signal s_jogada_L:       STD_LOGIC_VECTOR(6 downto 0);
-	signal s_jogada_C:       STD_LOGIC_VECTOR(6 downto 0);
-	signal s_resultado:   	 STD_LOGIC_VECTOR(6 downto 0);
-	signal s_resultado_jog:  STD_LOGIC_VECTOR(6 downto 0); 
-	signal s_resultado_adv:  STD_LOGIC_VECTOR(6 downto 0);
+	component decodificador_resultado_jogada_jog
+	port(
+		memoria:    in std_logic_vector(6 downto 0);
+		jogada_cod: out std_logic_vector (1 downto 0)
+	);
+	end component;
+	
+	signal s_entrada_serial:   		STD_LOGIC; 
+	signal s_resultado_jogada: 		STD_LOGIC_VECTOR(1 downto 0);
+	signal s_jogada_L:         		STD_LOGIC_VECTOR(6 downto 0);
+	signal s_jogada_C:        			STD_LOGIC_VECTOR(6 downto 0);
+	signal s_resultado:   	   		STD_LOGIC_VECTOR(6 downto 0);
+	signal s_resultado_jogada_adv:   STD_LOGIC_VECTOR(6 downto 0); 
+	signal s_resultado_jogada_jog:   STD_LOGIC_VECTOR(6 downto 0);
 	
 begin 
 		
@@ -156,7 +166,7 @@ begin
 		recebe_vez     => recebe_vez,
 		reg_jogada_L	=> s_jogada_L, 
 		reg_jogada_C	=> s_jogada_C, 
-		reg_mensagem	=> s_resultado_adv,
+		reg_mensagem	=> s_resultado_jogada_jog,
 		estado 			=> open
 	);
 
@@ -201,14 +211,9 @@ begin
 	);
 	
 	with vez select
-	s_resultado <= s_resultado_adv  when '1', 
-						s_resultado_jog when others;
+	s_resultado <= s_resultado_jogada_jog  when '1', 
+						s_resultado_jogada_adv when others;
 						
-	--with resultado_jogada select
-	--s_resultado_jog <= "1011000" when "10", -- X
-	--						 "1000001" when "01", -- A
-	--						 "1000010" when others;
-	
 	MUX: mux3x1_n
 	generic map(BITS=>7)
 	port map(
@@ -216,7 +221,7 @@ begin
 		D1     => "1000001",  -- A
 		D0     => "1000010",  -- B
       SEL    => resultado_jogada,
-      MX_OUT => s_resultado_jog
+      MX_OUT => s_resultado_jogada_adv
 	);
 	
 	
@@ -228,22 +233,29 @@ begin
 			coluna        => jogada_C
 	);
 	
+	-- Decodificador Resultado de ASCII para código 
+	D_RES: decodificador_resultado_jogada_jog 
+	port map (
+		memoria 	  => s_resultado_jogada_jog, 
+		jogada_cod => s_resultado_jogada
+	);
+	
 	PLACAR_JOG: contador_m
-	generic map(M => 2, N => 4)
+	generic map(M => 4, N => 4)
    port map(
 		CLK   => clock,
 		zera  => reset,
-		conta => '0',
+		conta => placar_jog_enable and s_resultado_jogada(1) and (not s_resultado_jogada(0)) ,
       Q     => placar_jogador,
       fim   => fim_jog
    );
 	
 	PLACAR_ADV: contador_m
-	generic map(M => 2, N => 4)
+	generic map(M => 4, N => 4)
    port map(
 		CLK   => clock,
 		zera  => reset,
-		conta => '0',
+		conta => placar_adv_enable and resultado_jogada(1) and (not resultado_jogada(0)),
       Q     => placar_adversario,
       fim   => fim_adv
    );

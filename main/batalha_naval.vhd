@@ -33,6 +33,8 @@ architecture batalha_naval_arc of batalha_naval is
 			clock, reset: 			in STD_LOGIC;
 			jogar:					in STD_LOGIC;
 			vez_inicio: 			in STD_LOGIC;
+			placar_adv_enable: 	out STD_LOGIC;
+			placar_jog_enable: 	out STD_LOGIC;
 		   vez: 						out STD_LOGIC;	
 			resposta_jogada:     in STD_LOGIC_VECTOR(1 downto 0);
 			estado: 					out STD_LOGIC_VECTOR(3 downto 0);
@@ -91,6 +93,8 @@ architecture batalha_naval_arc of batalha_naval is
 			 saida_serial_terminal: 		out STD_LOGIC;
 			 
 			 --Placar
+			 placar_adv_enable:  in STD_LOGIC;
+			 placar_jog_enable:	in STD_LOGIC;
 			 placar_jogador: 		out STD_LOGIC_VECTOR(3 downto 0);
 			 placar_adversario: 	out STD_LOGIC_VECTOR(3 downto 0)    
     );
@@ -127,6 +131,9 @@ architecture batalha_naval_arc of batalha_naval is
 	signal s_fim_jog: 		  STD_LOGIC;
 	signal s_fim_adv: 		  STD_LOGIC;
 	
+	signal s_placar_adv_enable:	STD_LOGIC;
+	signal s_placar_jog_enable:	STD_LOGIC;
+	
 	signal s_placar_jog:      STD_LOGIC_VECTOR(3 downto 0);
 	signal s_placar_adv:      STD_LOGIC_VECTOR(3 downto 0);     
 	
@@ -135,13 +142,15 @@ begin
 	-- Unidade de Controle
 	UC: batalha_naval_uc
 	port map(	
-		clock           => clock, 
-		reset				 => not reset,
-		jogar				 => not jogar,
-		vez_inicio		 => vez_inicio,
-		vez				 => s_vez,
-		resposta_jogada => s_result_jogada,
-		estado  			 => s_estado,
+		clock           	=> clock, 
+		reset				 	=> not reset,
+		jogar				 	=> not jogar,
+		vez_inicio		 	=> vez_inicio,
+		vez					=> s_vez,
+		placar_adv_enable => s_placar_adv_enable,
+		placar_jog_enable => s_placar_jog_enable,
+		resposta_jogada 	=> s_result_jogada,
+		estado  			 	=> s_estado,
 		-- Controle Recebe
 		recebe_vez		 => s_recebe_vez,
 		recebe_erro		 => s_recebe_erro,
@@ -195,6 +204,8 @@ begin
 		-- Dados Operações
 		saida_serial_terminal	=> saida_serial_terminal,
 		-- Placar
+		placar_adv_enable			=> s_placar_adv_enable,
+		placar_jog_enable			=> s_placar_jog_enable,
 		placar_jogador          => s_placar_jog,
 		placar_adversario       => s_placar_adv
 		
@@ -209,7 +220,7 @@ begin
 	);
 	
 	-- Estado
-	HEX_0: hex7seg
+	HEX_3: hex7seg
 	port map(
 		x => s_estado,
 		enable => '1',
@@ -225,7 +236,7 @@ begin
 	);
 	
 	-- Placar Adversário
-	HEX_X: hex7seg
+	HEX_0: hex7seg
 	port map(
 		x => s_placar_adv,
 		enable => '1',

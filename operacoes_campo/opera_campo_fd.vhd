@@ -78,7 +78,7 @@ architecture arch_opera_campo_fd of opera_campo_fd is
 	);
    end component;
     
-	component decodificador_resultado_jogada 
+	component decodificador_resultado_jogada_adv 
 	port(
 		memoria:    in std_logic_vector(6 downto 0);
 		jogada_cod: out std_logic_vector (1 downto 0)
@@ -156,7 +156,7 @@ begin
 	);
 		
 	-- Decodificador Resultado de ASCII para código 
-	D_RES: decodificador_resultado_jogada 
+	D_RES: decodificador_resultado_jogada_adv 
 	port map (
 		memoria 	  => s_dados_resultado, 
 		jogada_cod => s_resultado_jogada
