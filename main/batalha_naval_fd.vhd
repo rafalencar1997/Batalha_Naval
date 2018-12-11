@@ -216,7 +216,7 @@ begin
 	port map(
 		D2     => "1011000",  -- X
 		D1     => "1000001",  -- A
-		D0     => "1000010",  -- B
+		D0     => "1000101",  -- E
       SEL    => resultado_jogada_adv,
       MX_OUT => s_resultado_jogada_adv
 	);
