@@ -10,7 +10,8 @@ entity batalha_naval_uc is
 		placar_adv_enable: 	out STD_LOGIC;
 		placar_jog_enable: 	out STD_LOGIC;
 		vez: 						out STD_LOGIC;
-		resposta_jogada:     in STD_LOGIC_VECTOR(1 downto 0);
+		resposta_jogada_jog: in STD_LOGIC_VECTOR(1 downto 0);
+		resposta_jogada_adv: in STD_LOGIC_VECTOR(1 downto 0);
 		gan_per:					out STD_LOGIC_VECTOR(1 downto 0);
 		estado: 					out STD_LOGIC_VECTOR(3 downto 0);
 		-- Controle Recebe
@@ -45,7 +46,7 @@ architecture batalha_naval_uc_arc of batalha_naval_uc is
 		IMPRIME_A_1,  IMPRIME_A_2, IMPRIME_J, PLACAR_ADV, PLACAR_JOG,
 		MARCA_JOGADA_ADVERSARIO,    MARCA_JOGADA_TERMINAL, 
 		RECEBE_JOGADA_ADVERSARIO,   RECEBE_JOGADA_TERMINAL,
-		VERIFICA_JOGADA_ADVERSARIO, VERIFICA_JOGADA_TERMINAL, 
+		VERIFICA_JOGADA_ADVERSARIO, VERIFICA_RESPOSTA, 
 		VERIFICA_FIM_ADV, VERIFICA_FIM_JOG, GANHOU, PERDEU, MENSAGEM_ERRO
 	);
 	 
@@ -65,7 +66,7 @@ begin
 
 	-- next-state logic
 	process (jogar, vez_inicio, recebe_vez, recebe_pronto, 
-				resposta_jogada, envia_pronto, opera_pronto, 
+				resposta_jogada_jog, resposta_jogada_adv, envia_pronto, opera_pronto, 
 				fim_adv, fim_jog, Sreg) 
 	begin
 		case Sreg is
@@ -85,21 +86,18 @@ begin
 			when RECEBE_JOGADA_TERMINAL 		=> if recebe_pronto ='1' then Snext <= ENVIA_JOGADA;
 															else                       Snext <= RECEBE_JOGADA_TERMINAL;
 															end if;
-															
-			when VERIFICA_JOGADA_TERMINAL 	=> if resposta_jogada ="11" then Snext <= MENSAGEM_ERRO;
-															elsif	opera_pronto='1'   then Snext <= ENVIA_JOGADA;
-															else 							      Snext <= VERIFICA_JOGADA_TERMINAL;
-															end if;
-														
 											 
 			when ENVIA_JOGADA 					=> if envia_pronto ='1' then Snext <= RECEBE_RESPOSTA;
 															else            			  Snext <= ENVIA_JOGADA;
 															end if;
 					
-				
-			when RECEBE_RESPOSTA 				=> if recebe_pronto ='1' then Snext <= MARCA_JOGADA_TERMINAL;
+			when RECEBE_RESPOSTA 				=> if recebe_pronto ='1' then Snext <= VERIFICA_RESPOSTA;
 															else            				Snext <= RECEBE_RESPOSTA;
 															end if; 
+															
+			when VERIFICA_RESPOSTA				=> if resposta_jogada_jog ="11" then Snext <= RECEBE_JOGADA_TERMINAL;
+															else            				       Snext <= MARCA_JOGADA_TERMINAL;
+															end if;
 			
 			
 			when MARCA_JOGADA_TERMINAL 		=> if opera_pronto='1' then Snext <= PLACAR_JOG;
@@ -124,9 +122,9 @@ begin
 															else            			  Snext <= RECEBE_JOGADA_ADVERSARIO;
 															end if;
 			
-			when VERIFICA_JOGADA_ADVERSARIO 	=> if resposta_jogada ="11" then Snext <= MENSAGEM_ERRO;
-															elsif	opera_pronto='1'   then Snext <= PLACAR_ADV;
-															else 							      Snext <= VERIFICA_JOGADA_ADVERSARIO;
+			when VERIFICA_JOGADA_ADVERSARIO 	=> if resposta_jogada_adv ="11" then Snext <= MENSAGEM_ERRO;
+															elsif	opera_pronto='1'       then Snext <= PLACAR_ADV;
+															else 							          Snext <= VERIFICA_JOGADA_ADVERSARIO;
 															end if;
 			-- MARCAR PONTO NO PLACAR ADV												
 			when PLACAR_ADV						=> Snext <= MARCA_JOGADA_ADVERSARIO;
@@ -156,8 +154,9 @@ begin
 			when PERDEU								=> Snext <= PERDEU; 
 			
 			
-			when MENSAGEM_ERRO 					=> Snext <= RECEBE_JOGADA_ADVERSARIO;
-			
+			when MENSAGEM_ERRO 					=> if envia_pronto ='1' then Snext <= RECEBE_JOGADA_ADVERSARIO;
+															else            			  Snext <= MENSAGEM_ERRO;
+															end if;
 			
 			when others 							=> Snext <= INICIAL;
 		end case;
@@ -181,31 +180,32 @@ begin
 							 '0' when others;
 		
 	with Sreg select
-		mensagem  <= "000" 					  when ENVIA_JOGADA,
-				       "010" 					  when PASSA_VEZ,
-						 '1' & resposta_jogada when ENVIA_RESPOSTA,
+		mensagem  <= "000" 					      when ENVIA_JOGADA,
+				       "010" 					      when PASSA_VEZ,
+						 '1' & resposta_jogada_adv when ENVIA_RESPOSTA,
 						 "111" when others;
 						 
 	with Sreg select
-		enviar_enable  <= '1' when ENVIA_JOGADA | ENVIA_RESPOSTA | PASSA_VEZ,
+		enviar_enable  <= '1' when ENVIA_JOGADA | ENVIA_RESPOSTA | PASSA_VEZ | MENSAGEM_ERRO,
 				            '0' when others;	
 								
 	with Sreg select
-		opera_enable  <= '1' when VERIFICA_JOGADA_ADVERSARIO | VERIFICA_JOGADA_TERMINAL |
-										  MARCA_JOGADA_ADVERSARIO    | MARCA_JOGADA_TERMINAL    | 
+		opera_enable  <= '1' when VERIFICA_JOGADA_ADVERSARIO |
+										  MARCA_JOGADA_ADVERSARIO    | MARCA_JOGADA_TERMINAL | 
 										  IMPRIME_A_1 | IMPRIME_A_2  | IMPRIME_J,
 				           '0' when others;
 							  
 	with Sreg select
 		operacao  <= IMPRIME  when IMPRIME_A_1 | IMPRIME_A_2 | IMPRIME_J,
 				       ESCREVE  when MARCA_JOGADA_TERMINAL     | MARCA_JOGADA_ADVERSARIO,
-						 VERIFICA when VERIFICA_JOGADA_TERMINAL  | VERIFICA_JOGADA_ADVERSARIO,
+						 VERIFICA when VERIFICA_JOGADA_ADVERSARIO,
 						 "11" when others;
 						 
 	with Sreg select
 		vez  <= vez_inicio when INICIAL | DECIDE_JOGADOR, 
-				  '0'        when PASSA_VEZ | RECEBE_JOGADA_ADVERSARIO | VERIFICA_JOGADA_ADVERSARIO |
-										MARCA_JOGADA_ADVERSARIO | ENVIA_RESPOSTA | IMPRIME_J | ESPERA_VEZ, 
+				  '0'        when PASSA_VEZ      | RECEBE_JOGADA_ADVERSARIO | VERIFICA_JOGADA_ADVERSARIO |
+										MENSAGEM_ERRO  | PLACAR_ADV | MARCA_JOGADA_ADVERSARIO | 
+										ENVIA_RESPOSTA | IMPRIME_J  | VERIFICA_FIM_ADV | ESPERA_VEZ, 
 				  '1'  		 when others;
 				  
 	with Sreg select

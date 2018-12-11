@@ -37,7 +37,8 @@ architecture batalha_naval_arc of batalha_naval is
 			placar_adv_enable: 	out STD_LOGIC;
 			placar_jog_enable: 	out STD_LOGIC;
 		   vez: 						out STD_LOGIC;	
-			resposta_jogada:     in STD_LOGIC_VECTOR(1 downto 0);
+			resposta_jogada_jog: in STD_LOGIC_VECTOR(1 downto 0);
+			resposta_jogada_adv: in STD_LOGIC_VECTOR(1 downto 0);
 			gan_per:					out STD_LOGIC_VECTOR(1 downto 0);
 			estado: 					out STD_LOGIC_VECTOR(3 downto 0);
 			-- Controle Recebe
@@ -77,23 +78,21 @@ architecture batalha_naval_arc of batalha_naval is
 			 entrada_serial_adversario: in STD_LOGIC;
 			 jogada_L: 						 out STD_LOGIC_VECTOR(6 downto 0);
 			 jogada_C: 						 out STD_LOGIC_VECTOR(6 downto 0);
-			 resultado_jogada: 			 out STD_LOGIC_VECTOR(1 downto 0);
 			 -- Controle Enviar
 			 enviar_enable:   in  STD_LOGIC;
 			 mensagem:        in  STD_LOGIC_VECTOR(2 downto 0);
-			 enviar_pronto:   out STD_LOGIC;
-			 
+			 enviar_pronto:   out STD_LOGIC; 
 			 -- Dados Enviar
 			 saida_serial_adversario: 		out STD_LOGIC;
-			 
 			 -- Controle Operações
 			 opera_enable: in STD_LOGIC;
 			 operacao: 		in STD_LOGIC_VECTOR(1 downto 0);
 			 opera_pronto: out STD_LOGIC;
-		
 			 -- Dados Operações
 			 saida_serial_terminal: 		out STD_LOGIC;
-			 
+			 -- Resultado Jogada
+			 resultado_jogada_adv: 		 buffer STD_LOGIC_VECTOR(1 downto 0);
+			 resultado_jogada_jog: 		 buffer STD_LOGIC_VECTOR(1 downto 0);
 			 --Placar
 			 placar_adv_enable:  in STD_LOGIC;
 			 placar_jog_enable:	in STD_LOGIC;
@@ -136,6 +135,9 @@ architecture batalha_naval_arc of batalha_naval is
 	signal s_placar_adv_enable:	STD_LOGIC;
 	signal s_placar_jog_enable:	STD_LOGIC;
 	
+	signal s_resultado_jogada_adv: 	STD_LOGIC_VECTOR(1 downto 0);
+	signal s_resultado_jogada_jog: 	STD_LOGIC_VECTOR(1 downto 0);
+	
 	signal s_placar_jog:      STD_LOGIC_VECTOR(3 downto 0);
 	signal s_placar_adv:      STD_LOGIC_VECTOR(3 downto 0);     
 	
@@ -144,18 +146,19 @@ begin
 	-- Unidade de Controle
 	UC: batalha_naval_uc
 	port map(	
-		clock           	=> clock, 
-		reset				 	=> not reset,
-		jogar				 	=> not jogar,
-		vez_inicio		 	=> vez_inicio,
-		fim_jog				=>	s_fim_jog,
-		fim_adv 				=>	s_fim_adv,
-		placar_adv_enable => s_placar_adv_enable,
-		placar_jog_enable => s_placar_jog_enable,
-		vez					=> s_vez,
-		resposta_jogada 	=> s_result_jogada,
-		gan_per				=> open,
-		estado  			 	=> s_estado,
+		clock           		=> clock, 
+		reset				 		=> not reset,
+		jogar				 		=> not jogar,
+		vez_inicio		 		=> vez_inicio,
+		fim_jog					=>	s_fim_jog,
+		fim_adv 					=>	s_fim_adv,
+		placar_adv_enable 	=> s_placar_adv_enable,
+		placar_jog_enable 	=> s_placar_jog_enable,
+		vez						=> s_vez,
+		resposta_jogada_jog 	=> s_resultado_jogada_jog,
+		resposta_jogada_adv	=> s_resultado_jogada_adv,
+		gan_per					=> open,
+		estado  			 		=> s_estado,
 		-- Controle Recebe
 		recebe_vez		 => s_recebe_vez,
 		recebe_erro		 => s_recebe_erro,
@@ -195,7 +198,6 @@ begin
 		entrada_serial_adversario	=> entrada_serial_adversario, 
 		jogada_L							=> jogada_L, 
 		jogada_C							=> jogada_C, 
-		resultado_jogada				=> s_result_jogada, 
 		-- Controle Enviar
 		enviar_enable				=> s_envia_enable, 
 		mensagem						=> s_mensagem, 
@@ -208,6 +210,9 @@ begin
 		opera_pronto				=> s_operacao_pronto, 
 		-- Dados Operações
 		saida_serial_terminal	=> saida_serial_terminal,
+		-- Resultado Jogada
+		resultado_jogada_adv  	=> s_resultado_jogada_adv,
+		resultado_jogada_jog	   => s_resultado_jogada_jog,
 		-- Placar
 		placar_adv_enable			=> s_placar_adv_enable,
 		placar_jog_enable			=> s_placar_jog_enable,

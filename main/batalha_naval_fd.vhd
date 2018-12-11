@@ -20,23 +20,21 @@ entity batalha_naval_fd is
 			 entrada_serial_adversario: in STD_LOGIC;
 			 jogada_L: 						 out STD_LOGIC_VECTOR(6 downto 0);
 			 jogada_C: 						 out STD_LOGIC_VECTOR(6 downto 0);
-			 resultado_jogada: 			 buffer STD_LOGIC_VECTOR(1 downto 0);
 			 -- Controle Enviar
 			 enviar_enable:   in  STD_LOGIC;
 			 mensagem:        in  STD_LOGIC_VECTOR(2 downto 0);
 			 enviar_pronto:   out STD_LOGIC;
-			 
 			 -- Dados Enviar
 			 saida_serial_adversario: 		out STD_LOGIC;
-			 
 			 -- Controle Operações
 			 opera_enable: in STD_LOGIC;
 			 operacao: 		in STD_LOGIC_VECTOR(1 downto 0);
 			 opera_pronto: out STD_LOGIC;
-		
 			 -- Dados Operações
 			 saida_serial_terminal: 		out STD_LOGIC;
-			 
+			 -- Resultado Jogada
+			 resultado_jogada_adv: 		 buffer STD_LOGIC_VECTOR(1 downto 0);
+			 resultado_jogada_jog: 		 buffer STD_LOGIC_VECTOR(1 downto 0);
 			 -- Placar
 			 placar_adv_enable:  in STD_LOGIC;
 			 placar_jog_enable:	in STD_LOGIC;
@@ -139,7 +137,6 @@ architecture batalha_naval_fd_arc of batalha_naval_fd is
 	end component;
 	
 	signal s_entrada_serial:   		STD_LOGIC; 
-	signal s_resultado_jogada: 		STD_LOGIC_VECTOR(1 downto 0);
 	signal s_jogada_L:         		STD_LOGIC_VECTOR(6 downto 0);
 	signal s_jogada_C:        			STD_LOGIC_VECTOR(6 downto 0);
 	signal s_resultado:   	   		STD_LOGIC_VECTOR(6 downto 0);
@@ -195,7 +192,7 @@ begin
 		endereco         => s_jogada_L & s_jogada_C,
 		saida_serial     => saida_serial_terminal, 
 		opera_pronto     => opera_pronto,
-		resultado_jogada => resultado_jogada,
+		resultado_jogada => resultado_jogada_adv,
 		-- depuracao
 		db_reseta        	=> open, 
 		db_partida			=> open, 
@@ -220,7 +217,7 @@ begin
 		D2     => "1011000",  -- X
 		D1     => "1000001",  -- A
 		D0     => "1000010",  -- B
-      SEL    => resultado_jogada,
+      SEL    => resultado_jogada_adv,
       MX_OUT => s_resultado_jogada_adv
 	);
 	
@@ -237,7 +234,7 @@ begin
 	D_RES: decodificador_resultado_jogada_jog 
 	port map (
 		memoria 	  => s_resultado_jogada_jog, 
-		jogada_cod => s_resultado_jogada
+		jogada_cod => resultado_jogada_jog
 	);
 	
 	PLACAR_JOG: contador_m
@@ -245,17 +242,17 @@ begin
    port map(
 		CLK   => clock,
 		zera  => reset,
-		conta => placar_jog_enable and s_resultado_jogada(1) and (not s_resultado_jogada(0)) ,
+		conta => placar_jog_enable and resultado_jogada_jog(1) and (not resultado_jogada_jog(0)) ,
       Q     => placar_jogador,
       fim   => fim_jog
    );
 	
 	PLACAR_ADV: contador_m
-	generic map(M => 3, N => 4)
+	generic map(M => 4, N => 4)
    port map(
 		CLK   => clock,
 		zera  => reset,
-		conta => placar_adv_enable and resultado_jogada(1) and (not resultado_jogada(0)),
+		conta => placar_adv_enable and resultado_jogada_adv(1) and (not resultado_jogada_adv(0)),
       Q     => placar_adversario,
       fim   => fim_adv
    );
