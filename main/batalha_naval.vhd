@@ -37,6 +37,7 @@ architecture batalha_naval_arc of batalha_naval is
 			placar_adv_enable: 	out STD_LOGIC;
 			placar_jog_enable: 	out STD_LOGIC;
 		   vez: 						out STD_LOGIC;	
+			enable_result: 		out STD_LOGIC;
 			resposta_jogada_jog: in STD_LOGIC_VECTOR(1 downto 0);
 			resposta_jogada_adv: in STD_LOGIC_VECTOR(1 downto 0);
 			gan_per:					out STD_LOGIC_VECTOR(1 downto 0);
@@ -117,6 +118,18 @@ architecture batalha_naval_arc of batalha_naval is
        MX_OUT : out std_logic_vector (BITS-1 downto 0));
 	end component;
 	
+	-- Registrador
+	component registrador_n
+		generic (
+			constant N: integer := 8 
+		);
+		port (
+		   clock, clear, enable: in STD_LOGIC;
+			D: in STD_LOGIC_VECTOR(N-1 downto 0);
+			Q: out STD_LOGIC_VECTOR (N-1 downto 0) 
+		);
+	end component;
+	
 	signal s_recebe_pronto:   STD_LOGIC; 
 	signal s_operacao_pronto: STD_LOGIC; 
 	signal s_envia_pronto:    STD_LOGIC;
@@ -132,9 +145,10 @@ architecture batalha_naval_arc of batalha_naval is
 	signal s_recebe_erro:     STD_LOGIC;
 	signal s_mensagem:        STD_LOGIC_VECTOR(2 downto 0);
 	
-	signal s_operacao:        STD_LOGIC_VECTOR(1 downto 0);
-	--signal s_estado:          STD_LOGIC_VECTOR(3 downto 0);
-	signal s_result_jogada:	  STD_LOGIC_VECTOR(1 downto 0);
+	signal s_operacao:        			STD_LOGIC_VECTOR(1 downto 0);
+	--signal s_estado:          		STD_LOGIC_VECTOR(3 downto 0);
+	signal s_result_jogada:	  			STD_LOGIC_VECTOR(1 downto 0);
+	signal s_resultado_jogada_reg:  	STD_LOGIC_VECTOR(6 downto 0);
 	
 	signal s_vez: 				  STD_LOGIC;
 	signal s_fim_jog: 		  STD_LOGIC;
@@ -147,7 +161,9 @@ architecture batalha_naval_arc of batalha_naval is
 	signal s_resultado_jogada_jog: 	STD_LOGIC_VECTOR(1 downto 0);
 	
 	signal s_placar_jog:      STD_LOGIC_VECTOR(3 downto 0);
-	signal s_placar_adv:      STD_LOGIC_VECTOR(3 downto 0);     
+	signal s_placar_adv:      STD_LOGIC_VECTOR(3 downto 0);  
+
+	signal s_enable_result:	STD_LOGIC;	   
 	
 begin 
 	
@@ -163,6 +179,7 @@ begin
 		placar_adv_enable 	=> s_placar_adv_enable,
 		placar_jog_enable 	=> s_placar_jog_enable,
 		vez						=> s_vez,
+		enable_result    		=> s_enable_result,
 		resposta_jogada_jog 	=> s_resultado_jogada_jog,
 		resposta_jogada_adv	=> s_resultado_jogada_adv,
 		gan_per					=> gan_per,
@@ -229,6 +246,17 @@ begin
 		
 	);
 	
+	-- Registrador Linha 
+	REG_RESULT: registrador_n
+	generic map (N => 7)
+   port map(
+		clock  => clock,
+		clear  => not reset, 
+		enable => s_enable_result,
+		D      => s_resultado_jogada_reg,
+		Q      => resultado_jogada
+	);
+	
 	-- Estado
 	--HEX_3: hex7seg
 	--port map(
@@ -242,16 +270,21 @@ begin
 	s_result_jogada <= s_resultado_jogada_jog when '1',
 							 s_resultado_jogada_adv when others;
 	
-	HEX_3: mux3x1_n
-	generic map(BITS=>7)
-	port map(
-		D2     => "0001001",  -- X
-		D1     => "0001000",  -- A
-		D0     => "0000110",  -- E
-      SEL    => s_result_jogada,
-      MX_OUT => resultado_jogada
-	);
+	--HEX_3: mux3x1_n
+	--generic map(BITS=>7)
+	--port map(
+	--	D2     => "0001001",  -- X
+	--	D1     => "0001000",  -- A
+	--	D0     => "0000110",  -- E
+   --   SEL    => s_result_jogada,
+   --   MX_OUT => s_resultado_jogada_reg
+	--);
 	
+	with s_result_jogada select 
+	s_resultado_jogada_reg <= "0001001" when "10",   -- X
+									  "0001000" when "01",   -- A
+									  "0000110" when others; -- E
+									  
 	-- Jogador da Vez
 	HEX_2: hex7seg
 	port map(

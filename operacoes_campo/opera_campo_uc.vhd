@@ -22,7 +22,9 @@ architecture arch_opera_campo_uc of opera_campo_uc is
 
     type State_type is (inicial, envia, espera, incrementa, final, selecionaCR, 
 								enviaCR, esperaCR, selecionaNL, enviaNL, esperaNL,
-                        carrega_endereco, escreve_memoria, verifica_jogada);
+                        carrega_endereco, escreve_memoria, verifica_jogada,
+								selecionaCR_2, enviaCR_2, esperaCR_2, selecionaNL_2, enviaNL_2, esperaNL_2
+								);
 								
     signal Sreg, Snext: State_type;
 
@@ -79,8 +81,25 @@ begin
 		
       when esperaNL 			 => if pronto='0' then Snext <= esperaNL;
 										 elsif fim='0' then Snext <= incrementa;
-										 else 					 Snext <= final;
+										 else 					 Snext <= selecionaCR_2;
 										 end if;
+		
+		when selecionaCR_2 	 => Snext <= enviaCR_2;
+		
+		when enviaCR_2			 => Snext <= esperaCR_2;
+		
+		when esperaCR_2 		 => if pronto='0' then Snext <= esperaCR_2;
+										 else 				  Snext <= selecionaNL_2;
+										 end if;
+								 
+		when selecionaNL_2 		 => Snext <= enviaNL_2;
+		
+		
+		when enviaNL_2 		 => Snext <= esperaNL_2;
+		
+		when esperaNL_2 		 => if pronto='0' then Snext <= esperaNL_2;
+										 else 					 Snext <= final;
+										 end if;	
 								
       when carrega_endereco => if operacao=ESCREVE then Snext <= escreve_memoria;
 										 else 						  Snext <= verifica_jogada;
@@ -102,7 +121,7 @@ begin
       reseta <= '1' when inicial, '0' when others;
 		
   with Sreg select
-      partida <= '1' when envia | enviaCR | enviaNL, '0' when others;
+      partida <= '1' when envia | enviaCR | enviaNL | enviaCR_2 | enviaNL_2, '0' when others;
 		
   with Sreg select
       conta <= '1' when incrementa, '0' when others;
@@ -111,8 +130,8 @@ begin
       opera_pronto <= '1' when final, '0' when others;
 		
   with Sreg select
-      sel <= "10" when selecionaCR | enviaCR | esperaCR,
-             "01" when selecionaNL | enviaNL | esperaNL,
+      sel <= "10" when selecionaCR | enviaCR | esperaCR | selecionaCR_2 | enviaCR_2 | esperaCR_2,
+             "01" when selecionaNL | enviaNL | esperaNL | selecionaNL_2 | enviaNL_2 | esperaNL_2,
              "00" when others;
 				 
   with Sreg select

@@ -10,6 +10,7 @@ entity batalha_naval_uc is
 		placar_adv_enable: 	out STD_LOGIC;
 		placar_jog_enable: 	out STD_LOGIC;
 		vez: 						out STD_LOGIC;
+		enable_result: 		out STD_LOGIC;
 		resposta_jogada_jog: in STD_LOGIC_VECTOR(1 downto 0);
 		resposta_jogada_adv: in STD_LOGIC_VECTOR(1 downto 0);
 		gan_per:					out STD_LOGIC_VECTOR(1 downto 0);
@@ -215,6 +216,10 @@ begin
 	with Sreg select
 		placar_jog_enable <= '1' when PLACAR_JOG,
 									'0' when others;
+									
+	with Sreg select
+		enable_result <= '1' when VERIFICA_RESPOSTA | VERIFICA_JOGADA_ADVERSARIO | MENSAGEM_ERRO,
+							  '0' when others;
 		
 	with Sreg select
 		gan_per <= "10" when GANHOU,

@@ -238,7 +238,7 @@ begin
 	);
 	
 	PLACAR_JOG: contador_m
-	generic map(M => 4, N => 4)
+	generic map(M => 7, N => 4)
    port map(
 		CLK   => clock,
 		zera  => reset,
@@ -248,7 +248,7 @@ begin
    );
 	
 	PLACAR_ADV: contador_m
-	generic map(M => 4, N => 4)
+	generic map(M => 7, N => 4)
    port map(
 		CLK   => clock,
 		zera  => reset,
